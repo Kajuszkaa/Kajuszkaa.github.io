@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estetyczny Plan Lekcji</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,600&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            /* Tło imitujące słoneczne cienie i rośliny */
+            background-image: url('https://images.unsplash.com/photo-1581888517319-5701726bbc44?q=80&w=1920&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 40px 20px;
+            color: #333;
+        }
+
+        .glass-container {
+            /* Efekt szklanej tafli */
+            background: rgba(240, 238, 230, 0.65);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 40px;
+            padding: 30px 50px;
+            width: 100%;
+            max-width: 1300px;
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-title {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header-title h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 3rem;
+            color: #4a5c39; /* Oliwkowa zieleń */
+            font-weight: 600;
+            margin-bottom: 5px;
+            letter-spacing: 1px;
+        }
+
+        .header-title p {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #444;
+            font-weight: 500;
+        }
+
+        .schedule-grid {
+            display: grid;
+            grid-template-columns: 110px repeat(5, 1fr);
+            gap: 10px;
+            align-items: stretch;
+        }
+
+        /* Dni tygodnia (Nagłówki kolumn) */
+        .day-header {
+            background-color: #5b6453;
+            color: #fff;
+            padding: 8px 0;
+            border-radius: 25px;
+            text-align: center;
+            font-weight: 500;
+            font-size: 0.95rem;
+            letter-spacing: 1px;
+        }
+
+        /* Etykiety czasowe po lewej */
+        .time-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            color: #333;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        /* Karty z lekcjami */
+        .class-card {
+            border-radius: 20px;
+            padding: 8px 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            transition: transform 0.2s ease;
+        }
+
+        .class-card:hover {
+            transform: scale(1.02);
+        }
+
+        .class-card strong {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+            line-height: 1.2;
+        }
+
+        .class-card span {
+            font-size: 0.7rem;
+            opacity: 0.9;
+            line-height: 1.2;
+        }
+
+        /* Kolory kafelków (na wzór zdjęcia) */
+        .filled {
+            background-color: rgba(74, 92, 57, 0.85); /* Ciemna oliwkowa zieleń */
+            color: #fff;
+        }
+
+        .vacant {
+            background: linear-gradient(135deg, rgba(45, 70, 40, 0.65) 0%, rgba(30, 50, 25, 0.4) 100%);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+            border-left: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.05), 0 8px 16px rgba(0, 0, 0, 0.1);
+            color: #fff;
+            justify-content: center;
+            cursor: pointer;
+            user-select: none; /* Zapobiega zaznaczaniu tekstu przy spam-klikaniu */
+        }
+        
+        .vacant strong {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin: 0;
+        }
+
+        /* Responsywność dla mniejszych ekranów */
+        @media (max-width: 900px) {
+            .schedule-grid {
+                grid-template-columns: 70px repeat(5, 1fr);
+                gap: 8px;
+            }
+            .glass-container {
+                padding: 20px;
+                border-radius: 25px;
+            }
+            .header-title h1 {
+                font-size: 2.2rem;
+            }
+            .class-card strong {
+                font-size: 0.7rem;
+            }
+            .class-card span {
+                display: none; /* Ukrywamy sale i nauczycieli na małych ekranach dla czytelności */
+            }
+        }
+
+        /* Animacja spadających kotków */
+        .falling-cat {
+            position: fixed;
+            top: -100px;
+            z-index: 9999;
+            pointer-events: none; /* Ignoruje kliknięcia, żeby spadający kot nie blokował myszki */
+            animation: fall linear forwards;
+        }
+
+        @keyframes fall {
+            0% { transform: translateY(0) rotate(-20deg); }
+            100% { transform: translateY(120vh) rotate(360deg); }
+        }
+
+        /* Animacja liści na powitanie */
+        .falling-leaf {
+            position: fixed;
+            z-index: 9998;
+            pointer-events: none; /* Ignoruje kliknięcia */
+            animation: blow-wind linear forwards;
+            opacity: 0;
+        }
+
+        @keyframes blow-wind {
+            0% { left: -10%; transform: translateY(0) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { 
+                left: 110%; 
+                transform: translateY(15vh) rotate(720deg); 
+                opacity: 0; 
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="glass-container">
+        <div class="header-title">
+            <h1>plan lekcji</h1>
+            <p>Rok Szkolny 2025/2026</p>
+        </div>
+
+        <div class="schedule-grid">
+            <div></div>
+            <div class="day-header" style="grid-column: 2; grid-row: 1;">PON</div>
+            <div class="day-header" style="grid-column: 3; grid-row: 1;">WT</div>
+            <div class="day-header" style="grid-column: 4; grid-row: 1;">ŚR</div>
+            <div class="day-header" style="grid-column: 5; grid-row: 1;">CZW</div>
+            <div class="day-header" style="grid-column: 6; grid-row: 1;">PT</div>
+
+            <div class="time-label" style="grid-row: 2;">13:25 - 14:10</div>
+            <div class="time-label" style="grid-row: 3;">14:15 - 15:00</div>
+            <div class="time-label" style="grid-row: 4;">15:10 - 15:55</div>
+            <div class="time-label" style="grid-row: 5;">16:00 - 16:45</div>
+            <div class="time-label" style="grid-row: 6;">16:50 - 17:35</div>
+            <div class="time-label" style="grid-row: 7;">17:40 - 18:25</div>
+            <div class="time-label" style="grid-row: 8;">18:30 - 19:15</div>
+            <div class="time-label" style="grid-row: 9;">19:20 - 20:05</div>
+            <div class="time-label" style="grid-row: 10;">20:10 - 20:55</div>
+
+            <div class="class-card vacant" style="grid-column: 2; grid-row: 2 / 4;">
+                <strong>WOLNE</strong>
+            </div>
+            <div class="class-card filled" style="grid-column: 2; grid-row: 4;">
+                <strong>Język<br>polski</strong>
+                <span>Bondarchuk<br>s. 204</span>
+            </div>
+            <div class="class-card filled" style="grid-column: 2; grid-row: 5;">
+                <strong>Język<br>polski</strong>
+                <span>Bondarchuk<br>s. 204</span>
+            </div>
+            <div class="class-card filled" style="grid-column: 2; grid-row: 6;">
+                <strong>Język<br>polski</strong>
+                <span>Bondarchuk<br>s. 204</span>
+            </div>
+            <div class="class-card filled" style="grid-column: 2; grid-row: 7;">
+                <strong>Język<br>angielski</strong>
+                <span>Czarnowska<br>s. 204</span>
+            </div>
+            <div class="class-card filled" style="grid-column: 2; grid-row: 8;">
+                <strong>Język<br>angielski</strong>
+                <span>Czarnowska<br>s. 204</span>
+            </div>
+            <div class="class-card vacant" style="grid-column: 2; grid-row: 9 / 11;">
+                <strong>WOLNE</strong>
+            </div>
+
+            <div class="class-card vacant" style="grid-column: 3; grid-row: 2 / 6;">
+                <strong>WOLNE</strong>
+            </div>
+            <div class="class-card filled" style="grid-column: 3; grid-row: 6;">
+                <strong>Informatyka</strong>
+                <span>Boguszewicz s. 204</span>
+            </div>
+            <div class="class-card filled" style="grid-column: 3; grid-row: 7;">
+                <strong>Język ang.</strong>
+                <span>Czarnowska s. 204</span>
+            </div>
+            <div class="class-card filled" style="grid-column: 3; grid-row: 8;">
+                <strong>Jęz. polski</strong>
+                <span>Bondarchuk s. 204</span>
+            </div>
+            <div class="class-card vacant" style="grid-column: 3; grid-row: 9 / 11;">
+                <strong>WOLNE</strong>
+            </div>
+
+            <div class="class-card vacant" style="grid-column: 4; grid-row: 2 / 11;">
+                <strong>WOLNE</strong>
+            </div>
+
+            <div class="class-card vacant" style="grid-column: 5; grid-row: 2 / 11;">
+                <strong>WOLNE</strong>
+            </div>
+
+            <div class="class-card vacant" style="grid-column: 6; grid-row: 2 / 7;">
+                <strong>WOLNE</strong>
+            </div>
+            <div class="class-card filled" style="grid-column: 6; grid-row: 7;">
+                <strong>Matematyka</strong>
+                <br>
+                <span>Hatłas-Sowińska<br>s. 204</span>
+            </div>
+            <div class="class-card filled" style="grid-column: 6; grid-row: 8;">
+                <strong>Matematyka</strong>
+                <br>
+                <span>Hatłas-Sowińska<br>s. 204</span>
+            </div>
+            <div class="class-card filled" style="grid-column: 6; grid-row: 9;">
+                <strong>Matematyka</strong>
+                <br>
+                <span>Hatłas-Sowińska<br>s. 204</span>
+            </div>
+            <div class="class-card filled" style="grid-column: 6; grid-row: 10;">
+                <strong>Matematyka</strong>
+                <br>
+                <span>Hatłas-Sowińska<br>s. 204</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Efekt powiewu liści przy załadowaniu strony
+            function spawnLeaves() {
+                const leavesEmojis = ['🍃', '🍂', '🍁', '🌿'];
+                const numLeaves = 25; // Liczba liści
+
+                for (let i = 0; i < numLeaves; i++) {
+                    const leaf = document.createElement('div');
+                    leaf.classList.add('falling-leaf');
+                    leaf.innerText = leavesEmojis[Math.floor(Math.random() * leavesEmojis.length)];
+                    
+                    leaf.style.top = `${Math.random() * 80}vh`; // Losowa wysokość początkowa
+                    leaf.style.fontSize = `${Math.random() * 20 + 20}px`; // Rozmiar od 20 do 40px
+                    
+                    const duration = Math.random() * 4 + 3; // Czas przelotu od 3s do 7s
+                    const delay = Math.random() * 1.5; // Opóźnienie startu od 0s do 1.5s
+                    leaf.style.animationDuration = `${duration}s`;
+                    leaf.style.animationDelay = `${delay}s`;
+
+                    document.body.appendChild(leaf);
+                    setTimeout(() => { leaf.remove(); }, (duration + delay) * 1000); // Sprzątanie
+                }
+            }
+            spawnLeaves(); // Uruchom tylko raz!
+
+            const vacantCards = document.querySelectorAll('.class-card.vacant');
+            // Tablica z emoji łapek
+            const pawEmojis = ['🐾'];
+
+            vacantCards.forEach(card => {
+                card.addEventListener('mousedown', (e) => {
+                    // e.button === 0 oznacza lewy przycisk myszy
+                    if (e.button === 0) {
+                        spawnCat(e.clientX);
+                    }
+                });
+            });
+
+            function spawnCat(mouseX) {
+                const cat = document.createElement('div');
+                cat.classList.add('falling-cat');
+                
+                // Wybierz losową łapkę
+                cat.innerText = pawEmojis[Math.floor(Math.random() * pawEmojis.length)];
+                
+                // Rozrzut w poziomie - pojawia się mniej więcej tam gdzie kursor myszy
+                const offset = (Math.random() - 0.5) * 200; 
+                cat.style.left = `${mouseX + offset}px`;
+                
+                // Losowy czas spadania i rozmiar dla lepszego efektu
+                const duration = Math.random() * 2 + 1.5; // od 1.5s do 3.5s
+                cat.style.animationDuration = `${duration}s`;
+                const size = Math.random() * 30 + 30; // od 30px do 60px
+                cat.style.fontSize = `${size}px`;
+
+                document.body.appendChild(cat);
+
+                // Posprzątaj po kotku, jak już wyleci za ekran
+                setTimeout(() => { cat.remove(); }, duration * 1000);
+            }
+        });
+    </script>
+</body>
+</html>
