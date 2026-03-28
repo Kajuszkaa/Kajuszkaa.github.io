@@ -150,24 +150,117 @@
             margin: 0;
         }
 
+        /* --- Ekran Ładowania --- */
+        .loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #5b6453; /* Zielony z nagłówków dni */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            transition: opacity 0.75s ease, visibility 0.75s ease;
+        }
+
+        .loader.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .loader-dots {
+            display: flex;
+            gap: 20px;
+        }
+
+        .loader-dots div {
+            width: 25px;
+            height: 25px;
+            background-color: #f0eee6; /* Kolor tła kontenera */
+            border-radius: 50%;
+            animation: bounce-up-down 1.2s infinite ease-in-out;
+        }
+
+        .loader-dots div:nth-child(1) { animation-delay: 0s; }
+        .loader-dots div:nth-child(2) { animation-delay: 0.2s; }
+        .loader-dots div:nth-child(3) { animation-delay: 0.4s; }
+
         /* Responsywność dla mniejszych ekranów */
         @media (max-width: 900px) {
-            .schedule-grid {
-                grid-template-columns: 70px repeat(5, 1fr);
-                gap: 8px;
+            body {
+                /* Naprawia krytyczny błąd "ucinania" góry i lewej strony na małych ekranach! */
+                align-items: flex-start;
+                padding: 15px 10px;
             }
+
+            .schedule-grid {
+                /* Odpowiednia szerokość kolumn, by nazwy się nie gniotły */
+                grid-template-columns: 75px repeat(5, minmax(130px, 1fr));
+                gap: 10px;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch; /* Płynne przewijanie na iOS */
+                padding-bottom: 15px;
+                scrollbar-width: none; /* Ukrywa pasek w przeglądarce Firefox */
+            }
+            
+            /* Ukrywa pasek przewijania w Chrome/Safari (zostawiamy czysty "swipe") */
+            .schedule-grid::-webkit-scrollbar {
+                display: none;
+            }
+
+            /* Zatrzymanie godzin w miejscu podczas przewijania (Sticky Column) */
+            .time-label {
+                position: sticky;
+                left: 0;
+                z-index: 10;
+                background: rgba(255, 255, 255, 0.65);
+                backdrop-filter: blur(15px);
+                -webkit-backdrop-filter: blur(15px);
+                border: 1px solid rgba(255, 255, 255, 0.4);
+                border-radius: 12px;
+                box-shadow: 4px 0 15px rgba(0, 0, 0, 0.08); /* Cień nadaje głębię nad przesuwającymi się kartami */
+            }
+
+            /* Pusty lewy górny róg też musi być "przyklejony" nałożony na resztę */
+            .schedule-grid > div:first-child {
+                position: sticky;
+                left: 0;
+                z-index: 11;
+            }
+
             .glass-container {
-                padding: 20px;
+                padding: 25px 15px;
                 border-radius: 25px;
             }
             .header-title h1 {
                 font-size: 2.2rem;
             }
             .class-card strong {
-                font-size: 0.7rem;
+                font-size: 0.85rem;
             }
             .class-card span {
-                display: none; /* Ukrywamy sale i nauczycieli na małych ekranach dla czytelności */
+                display: block; /* Przywracamy widoczność nauczycieli i sal na telefonie! */
+                font-size: 0.7rem;
+                margin-top: 3px;
+            }
+        }
+
+        /* Dodatkowe poprawki celowane pod ekrany telefonów */
+        @media (max-width: 480px) {
+            .header-title h1 {
+                font-size: 1.8rem;
+            }
+            .header-title p {
+                font-size: 0.8rem;
+            }
+            .time-label {
+                font-size: 0.7rem;
+            }
+            .day-header {
+                font-size: 0.85rem;
+                padding: 6px 0;
             }
         }
 
@@ -178,6 +271,15 @@
             z-index: 9999;
             pointer-events: none; /* Ignoruje kliknięcia, żeby spadający kot nie blokował myszki */
             animation: fall linear forwards;
+        }
+
+        @keyframes bounce-up-down {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-25px);
+            }
         }
 
         @keyframes fall {
@@ -207,6 +309,14 @@
     </style>
 </head>
 <body>
+
+    <div class="loader">
+        <div class="loader-dots">
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+    </div>
 
     <div class="glass-container">
         <div class="header-title">
@@ -274,7 +384,11 @@
                 <strong>Jęz. polski</strong>
                 <span>Bondarchuk s. 204</span>
             </div>
-            <div class="class-card vacant" style="grid-column: 3; grid-row: 9 / 11;">
+            <div class="class-card filled" style="grid-column: 3; grid-row: 9;">
+                <strong>Informatyka</strong>
+                <span>Boguszewicz s. 204</span>
+            </div>
+            <div class="class-card vacant" style="grid-column: 3; grid-row: 10;">
                 <strong>WOLNE</strong>
             </div>
 
@@ -314,10 +428,21 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // --- Logika ekranu ładowania ---
+            const loader = document.querySelector('.loader');
+            // Ukryj loader po chwili, aby animacja była widoczna
+            setTimeout(() => {
+                if (loader) {
+                    loader.classList.add('hidden');
+                }
+                // Uruchom animację liści, gdy ekran ładowania zacznie znikać
+                setTimeout(spawnLeaves, 400);
+            }, 1800); // Czas w milisekundach
+
             // Efekt powiewu liści przy załadowaniu strony
             function spawnLeaves() {
                 const leavesEmojis = ['🍃', '🍂', '🍁', '🌿'];
-                const numLeaves = 25; // Liczba liści
+                const numLeaves = 75; // Zwiększona liczba liści dla lepszego efektu
 
                 for (let i = 0; i < numLeaves; i++) {
                     const leaf = document.createElement('div');
@@ -336,15 +461,14 @@
                     setTimeout(() => { leaf.remove(); }, (duration + delay) * 1000); // Sprzątanie
                 }
             }
-            spawnLeaves(); // Uruchom tylko raz!
 
             const vacantCards = document.querySelectorAll('.class-card.vacant');
             // Tablica z emoji łapek
             const pawEmojis = ['🐾'];
 
             vacantCards.forEach(card => {
-                card.addEventListener('mousedown', (e) => {
-                    // e.button === 0 oznacza lewy przycisk myszy
+                card.addEventListener('pointerdown', (e) => {
+                    // e.button === 0 to lewe kliknięcie myszą LUB dotknięcie ekranu palcem
                     if (e.button === 0) {
                         spawnCat(e.clientX);
                     }

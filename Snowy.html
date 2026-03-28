@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mój Nowy Projekt</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&display=swap" rel="stylesheet">
+    <style>
+        /* Resetujemy domyślne marginesy przeglądarki */
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            /* Mroczne tło dla lepszego klimatu */
+            background-color: #121212;
+            background-image: radial-gradient(circle at center, #2a2a2a 0%, #050505 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Cinzel Decorative', serif;
+        }
+
+        /* Gotycki, szary panel roboczy */
+        .gothic-panel {
+            background: linear-gradient(180deg, #3a3a3a 0%, #1c1c1c 100%);
+            width: 94vw;
+            height: 94vh;
+            box-sizing: border-box;
+            /* Fikuśne, podwójne obramowanie przypominające kamienną ramę */
+            border: 12px double #5a5a5a;
+            border-radius: 8px;
+            /* Głębokie cienie dające efekt katakumb/mrocznego zamku */
+            box-shadow: 
+                0 0 50px rgba(0, 0, 0, 0.9),
+                inset 0 0 60px rgba(0, 0, 0, 0.8);
+            padding: 40px;
+            color: #dcdcdc; /* Srebrzysty tekst */
+            text-align: center;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Układ Bingo */
+        .bingo-container {
+            display: flex;
+            flex-direction: row;
+            gap: 30px;
+            flex: 1;
+            min-height: 0;
+            margin-top: 10px;
+        }
+
+        .bingo-board {
+            flex: 3;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        .bingo-sidebar {
+            flex: 1;
+            border-left: 2px dashed #5a5a5a;
+            padding-left: 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            text-align: left;
+            overflow-y: auto; /* Pozwala scrolować długą listę statystyk */
+            padding-right: 15px;
+        }
+
+        /* Styl paska przewijania dla prawego panelu */
+        .bingo-sidebar::-webkit-scrollbar { width: 12px; }
+        .bingo-sidebar::-webkit-scrollbar-track { background: rgba(20, 20, 20, 0.5); border-radius: 6px; }
+        .bingo-sidebar::-webkit-scrollbar-thumb { 
+            background: #8a3a3a; 
+            border-radius: 6px; 
+            border: 2px solid #1c1c1c; 
+        }
+
+        /* Pojedynczy kafelek Bingo */
+        .bingo-cell {
+            background: rgba(30, 30, 30, 0.6);
+            border: 2px solid #5a5a5a;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center; /* Wyśrodkowuje tekst, gdy połamie się na kilka linijek */
+            font-size: 3.5rem; /* JESZCZE WIĘKSZA czcionka haseł wpisanych w kafelki */
+            color: #ffffff;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s ease;
+            padding: 15px;
+            user-select: none;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+            overflow: hidden; /* Żeby pineski wbite na brzegu nie wychodziły poza ramkę */
+        }
+
+        .bingo-cell:hover {
+            background: rgba(50, 50, 50, 0.8);
+        }
+
+        /* Efekt przypiętej pineski */
+        .bingo-cell.has-pins {
+            background: rgba(80, 20, 20, 0.4);
+            border-color: #a04040;
+        }
+
+        /* Przycisk resetu (2 strzałeczki) w kafelku */
+        .cell-reset {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            font-size: 5rem; /* Zdecydowanie większy przycisk resetu */
+            opacity: 0; /* Ukryty, dopóki nie najedziesz na kafelek */
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            z-index: 20;
+        }
+        .bingo-cell:hover .cell-reset {
+            opacity: 0.6; /* Lekko widoczny po najechaniu na pole */
+        }
+        .cell-reset:hover {
+            opacity: 1 !important;
+            transform: rotate(180deg) scale(1.2); /* Fajna animacja obrotu */
+        }
+
+        /* Pojedyncza pineska dodawana w miejscu kliknięcia */
+        .pin-icon {
+            position: absolute;
+            font-size: 3rem; /* Wielka pineska */
+            transform: translate(-50%, -50%); /* Środkuje pineskę pod kursorem */
+            cursor: pointer;
+            z-index: 10;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.8));
+            transition: transform 0.1s ease;
+        }
+        .pin-icon:hover {
+            transform: translate(-50%, -50%) scale(1.2); /* Lekko powiększa się po najechaniu (by usunąć) */
+        }
+
+        /* Wyróżnienie "Wkurzył mnie" */
+        .bingo-cell.special {
+            border-color: #8a3a3a;
+            font-weight: bold;
+        }
+
+        /* Wygląd statystyk w panelu bocznym */
+        .stat-box {
+            background: rgba(20, 20, 20, 0.8);
+            border: 1px solid #5a5a5a;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            text-align: center;
+        }
+
+        .stat-box span {
+            font-size: 3.5rem; /* Zwiększony opis licznika */
+            color: #dcdcdc;
+        }
+
+        .stat-box strong {
+            font-size: 7rem; /* ABSOLUTNIE POTĘŻNY wynik licznika */
+            color: #ffffff;
+            text-shadow: 0 0 10px rgba(255,255,255,0.2);
+        }
+
+        /* Przycisk twardego resetu */
+        .full-reset-btn {
+            background-color: rgba(138, 58, 58, 0.4);
+            color: #dcdcdc;
+            border: 2px dashed #a04040;
+            border-radius: 8px;
+            padding: 15px;
+            font-size: 2.5rem; /* Ogromny przycisk resetu */
+            font-family: 'Cinzel Decorative', serif;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 15px;
+        }
+        .full-reset-btn:hover {
+            background-color: rgba(160, 64, 64, 0.8);
+            color: #ffffff;
+        }
+
+        /* Mała responsywność pod telefony */
+        @media (max-width: 900px) {
+            .bingo-container {
+                flex-direction: column;
+                overflow-y: auto;
+            }
+            .bingo-sidebar {
+                border-left: none;
+                border-top: 2px dashed #5a5a5a;
+                padding-left: 0;
+                padding-top: 20px;
+            }
+            .bingo-board {
+                min-height: 400px;
+            }
+        }
+
+        /* Gotyckie zdobienia w narożnikach */
+        .gothic-panel::before,
+        .gothic-panel::after {
+            content: "✥";
+            position: absolute;
+            font-size: 2.5rem;
+            color: #5a5a5a;
+        }
+
+        .gothic-panel::before {
+            top: 15px;
+            left: 25px;
+        }
+
+        .gothic-panel::after {
+            bottom: 15px;
+            right: 25px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="gothic-panel">
+        <h1 style="margin-top: 0; color: #ffffff; letter-spacing: 2px; font-size: 3.5rem;">Piotrek Bingo</h1>
+        
+        <div class="bingo-container">
+            <!-- Plansza Bingo -->
+            <div class="bingo-board">
+                <div class="bingo-cell" data-id="1">Kwiatki ;3</div>
+                <div class="bingo-cell" data-id="2">Corny talk</div>
+                <div class="bingo-cell" data-id="3">Wysłanie dziwnego zdjęcia</div>
+                
+                <div class="bingo-cell" data-id="4">Nazwanie Mai pieszczotliwie</div>
+                <!-- Zwróć uwagę na data-id="wkurzenie" poniżej - to ono jest połączone z licznikiem -->
+                <div class="bingo-cell special" data-id="wkurzenie">RageBaitowanie Mai</div>
+                <div class="bingo-cell" data-id="6">"Bartek wysłał głosówkę"</div>
+                
+                <div class="bingo-cell" data-id="7">wkurzanie się na codowanie</div>
+                <div class="bingo-cell" data-id="8">Dziwne dźwięki</div>
+                <div class="bingo-cell" data-id="9">Slaps ;3</div>
+            </div>
+            
+            <!-- Prawy panel ze statystykami -->
+            <div class="bingo-sidebar">
+                <h2 style="color: #ff5555; margin-top: 0; text-align: center; font-size: 4.5rem;">Statystyki</h2>
+                
+                <div class="stat-box">
+                    <span>😡 Całkowite wkurwienie:</span>
+                    <strong id="wkurz-counter">0</strong>
+                </div>
+                
+                <div class="stat-box">
+                    <span>📌 Dzisiejsze trafienia:</span>
+                    <strong id="daily-pins">0</strong>
+                </div>
+
+                <!-- Miejsce na szczegółowe liczniki dla każdej kategorii -->
+                <div id="detailed-stats" style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 30px; margin-top: 10px;"></div>
+                
+                <p style="font-size: 2.2rem; color: #888; margin-top: auto; text-align: center;">Plansza resetuje się automatycznie każdego dnia.</p>
+                <button id="full-reset-btn" class="full-reset-btn">TWARDY RESET</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const cells = document.querySelectorAll('.bingo-cell');
+            const wkurzCounterEl = document.getElementById('wkurz-counter');
+            const dailyPinsEl = document.getElementById('daily-pins');
+            const fullResetBtn = document.getElementById('full-reset-btn');
+
+            // Automatyczne odczytanie nazw kategorii z kafelków przed dodaniem pinesek/przycisków
+            const categoryNames = {};
+            cells.forEach(cell => {
+                categoryNames[cell.dataset.id] = cell.textContent.trim();
+            });
+
+            // Logika resetowania o północy (sprawdza obecną datę)
+            const today = new Date().toDateString();
+            if (localStorage.getItem('bingoDate') !== today) {
+                localStorage.removeItem('bingoPinsList'); // Czyści pineski
+                localStorage.setItem('bingoDate', today); // Zapisuje nową datę
+            }
+
+            // Pobieranie zapisanych pinesek i licznika wkurzenia (który NIE resetuje się co dobe)
+            let pinsList = JSON.parse(localStorage.getItem('bingoPinsList')) || [];
+            let totalWkurzenie = parseInt(localStorage.getItem('totalWkurzenie')) || 0;
+
+            function saveAndRender() {
+                // Zapis
+                localStorage.setItem('bingoPinsList', JSON.stringify(pinsList));
+                localStorage.setItem('totalWkurzenie', totalWkurzenie);
+                
+                // Czyszczenie obecnych pinesek
+                document.querySelectorAll('.pin-icon').forEach(p => p.remove());
+                cells.forEach(c => c.classList.remove('has-pins'));
+                
+                // Generowanie nowych
+                pinsList.forEach(pin => {
+                    const cell = document.querySelector(`.bingo-cell[data-id="${pin.cellId}"]`);
+                    if (cell) {
+                        cell.classList.add('has-pins');
+                        const pinEl = document.createElement('div');
+                        pinEl.classList.add('pin-icon');
+                        pinEl.innerText = '📌';
+                        pinEl.style.left = `${pin.x}px`;
+                        pinEl.style.top = `${pin.y}px`;
+                        
+                        // Kliknięcie w istniejącą pineskę ją USUWA
+                        pinEl.addEventListener('click', (e) => {
+                            e.stopPropagation(); // Ignoruje kliknięcie kafelka pod spodem
+                            pinsList = pinsList.filter(p => p.id !== pin.id);
+                            if (pin.cellId === 'wkurzenie') totalWkurzenie--;
+                            saveAndRender();
+                        });
+                        
+                        cell.appendChild(pinEl);
+                    }
+                });
+                
+                // Aktualizacja tekstów
+                dailyPinsEl.innerText = pinsList.length;
+                wkurzCounterEl.innerText = totalWkurzenie;
+
+                // Zliczanie i renderowanie statystyk dla KAŻDEJ pojedynczej kategorii
+                const dailyCounts = {};
+                Object.keys(categoryNames).forEach(id => dailyCounts[id] = 0);
+                
+                pinsList.forEach(pin => {
+                    if (dailyCounts[pin.cellId] !== undefined) dailyCounts[pin.cellId]++;
+                });
+
+                const detailedStatsEl = document.getElementById('detailed-stats');
+                detailedStatsEl.innerHTML = ''; // Czyści listę
+                
+                // Tworzy i dopina wiersze liczników dla każdego dostępnego kafelka
+                Object.keys(categoryNames).forEach(id => {
+                    const row = document.createElement('div');
+                    row.style.display = 'flex';
+                    row.style.justifyContent = 'space-between';
+                    row.style.alignItems = 'center';
+                    row.style.borderBottom = '1px solid rgba(90, 90, 90, 0.5)';
+                    row.style.paddingBottom = '10px';
+                    
+                    row.innerHTML = `
+                        <span style="font-size: 2.2rem; color: #ccc; text-align: left; flex: 1; padding-right: 15px; line-height: 1.1;">${categoryNames[id]}</span>
+                        <strong style="font-size: 3.5rem; color: ${dailyCounts[id] > 0 ? '#ffcccc' : '#666'};">${dailyCounts[id]}</strong>
+                    `;
+                    
+                    detailedStatsEl.appendChild(row);
+                });
+            }
+            
+            saveAndRender(); // Odpal przy załadowaniu strony
+
+            cells.forEach(cell => {
+                // Tworzymy przycisk resetu dla każdego kafelka
+                const resetBtn = document.createElement('div');
+                resetBtn.classList.add('cell-reset');
+                resetBtn.innerText = '🔄'; // Ikonka dwóch strzałek
+                resetBtn.title = 'Zresetuj pineski w tym kafelku';
+                
+                resetBtn.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Ignoruje kliknięcie kafelka pod spodem (nie doda pineski)
+                    const id = cell.dataset.id;
+                    
+                    // Usuwamy tylko te z obecnego kafelka i ewentualnie redukujemy licznik "wkurzenia"
+                    const pinsToRemove = pinsList.filter(p => p.cellId === id);
+                    if (id === 'wkurzenie') totalWkurzenie -= pinsToRemove.length;
+                    
+                    pinsList = pinsList.filter(p => p.cellId !== id);
+                    saveAndRender();
+                });
+                cell.appendChild(resetBtn);
+
+                // Kliknięcie w kafelek DODAJE pineskę w miejscu kursora
+                cell.addEventListener('click', (e) => {
+                    const id = cell.dataset.id;
+                    
+                    // Pozycja myszki względem kafelka
+                    const rect = cell.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    
+                    pinsList.push({ id: Date.now().toString(), cellId: id, x: x, y: y });
+                    if (id === 'wkurzenie') totalWkurzenie++;
+                    
+                    saveAndRender();
+                });
+            });
+
+            // Logika twardego resetu całej planszy
+            fullResetBtn.addEventListener('click', () => {
+                if (confirm('Czy na pewno chcesz usunąć wszystkie pineski i zresetować CAŁKOWITE WKURWIENIE do zera?')) {
+                    pinsList = [];
+                    totalWkurzenie = 0;
+                    saveAndRender();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Szkolne Bingo 2026</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Nunito:wght@800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #e3c3c3;
+            --dark-square: #8b4a52;
+            --light-square: #cd8b8b;
+            --text-color: #fcebeb;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+            font-family: 'Nunito', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            background-image: radial-gradient(circle at 10% 20%, rgba(205, 139, 139, 0.1) 0%, transparent 20%),
+                              radial-gradient(circle at 90% 80%, rgba(205, 139, 139, 0.1) 0%, transparent 20%);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .header h1 {
+            font-family: 'Caveat', cursive;
+            font-size: 4.5rem;
+            color: var(--dark-square);
+            margin: 0;
+            line-height: 1;
+            letter-spacing: 2px;
+        }
+
+        .header h2 {
+            font-family: 'Caveat', cursive;
+            font-size: 3rem;
+            color: var(--light-square);
+            margin: -10px 0 20px 0;
+        }
+
+        /* Główny kontener do ułożenia planszy i panelu obok siebie */
+        .main-layout {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap; /* Pozwala na zrzucenie panelu pod spód na telefonach */
+            justify-content: center;
+            align-items: flex-start;
+            gap: 40px;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        /* Boczny panel na prawo od planszy */
+        .side-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            flex: 1;
+            min-width: 280px;
+            max-width: 380px; 
+        }
+
+        /* Kafelki w bocznym panelu */
+        .controls, .leaderboard {
+            background: rgba(255, 255, 255, 0.4); /* Półprzezroczyste szkło */
+            border-radius: 35px;
+            display: flex;
+            flex-direction: column; /* Zawsze pod sobą w kafelkach bocznych */
+            gap: 15px;
+            align-items: stretch;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.05);
+            box-sizing: border-box;
+            padding: 30px;
+            width: 100%;
+        }
+
+        select {
+            padding: 12px 20px;
+            border-radius: 20px;
+            border: 3px solid var(--dark-square);
+            background: white;
+            font-family: 'Nunito', sans-serif;
+            font-weight: bold;
+            color: var(--dark-square);
+            cursor: pointer;
+            outline: none;
+            font-size: 1.5rem;
+            width: 100%;
+        }
+        
+        .controls button {
+            width: 100%; /* Przycisk na całą szerokość */
+        }
+
+        .bingo-board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); /* Plansza 3 na 3 */
+            gap: 25px; /* Kafelki dalej od siebie */
+            background-color: transparent;
+            padding: 10px;
+            max-width: min(100%, 70vh);
+            width: 100%;
+        }
+
+        .square {
+            aspect-ratio: 1 / 1;
+            border-radius: 35px; /* Bardziej zaokrąglone kafelki */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 5px;
+            font-size: clamp(1rem, 4vmin, 1.6rem); /* Zmniejszona, responsywna czcionka */
+            font-weight: 800;
+            cursor: pointer;
+            position: relative;
+            color: var(--text-color);
+            transition: transform 0.1s;
+            user-select: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .square:active {
+            transform: scale(0.95);
+        }
+
+        /* Idealny wzór szachownicy dla planszy 3x3 */
+        .square:nth-child(odd) { background-color: var(--dark-square); }
+        .square:nth-child(even) { background-color: var(--light-square); }
+
+        .square.center {
+            font-size: clamp(1.2rem, 4.5vmin, 2rem); /* Zmniejszony napis JACKPOT */
+            /* Usunięto gigantyczną gwiazdę w tle */
+        }
+
+        .center-star {
+            position: absolute;
+            color: rgba(255, 255, 255, 0.15);
+            font-size: clamp(6rem, 24vmin, 12rem);
+            z-index: 0;
+        }
+
+        .square-text {
+            z-index: 1;
+        }
+
+        .pin {
+            position: absolute;
+    font-size: clamp(1.8rem, 6vmin, 2.8rem); /* Zmniejszone pineski */
+            transform: translate(-50%, -85%) rotate(-10deg);
+            cursor: pointer;
+            z-index: 2;
+            pointer-events: none;
+            transition: transform 0.1s ease;
+            user-select: none;
+        }
+
+        /* Deszcz konfetti po wygranej */
+        .confetti-piece {
+            position: fixed;
+            top: -100px;
+            z-index: 9999;
+            pointer-events: none;
+            animation: fall-confetti linear forwards;
+        }
+
+        @keyframes fall-confetti {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            80% { opacity: 1; }
+            100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+        }
+
+        @media (max-width: 500px) {
+            .square { border-radius: 25px; } /* Proporcjonalne zaokrąglenie na telefonach */
+            .header h1 { font-size: 3.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Bingo</h1>
+    </div>
+
+    <div class="main-layout">
+        <div class="bingo-board" id="board">
+        </div>
+
+        <div class="side-panel">
+            <div class="controls">
+                <label for="pinColorSelect" style="color: var(--dark-square); font-weight: bold; font-size: 1.5rem; text-align: center;">Kto zaznacza?</label>
+                <select id="pinColorSelect">
+                    <option value="0deg">Maja ❤️</option>
+                    <option value="240deg">Kinga 💙</option>
+                    <option value="120deg">Dawid 💚</option>
+                </select>
+                <button id="resetBtn" style="padding: 12px 20px; border-radius: 20px; border: 3px solid var(--dark-square); background: var(--dark-square); color: white; font-weight: bold; cursor: pointer; font-size: 1.2rem;">Od nowa 🔄</button>
+            </div>
+
+            <div class="leaderboard">
+                <h2 style="color: var(--dark-square); margin: 0 0 5px 0; font-family: 'Caveat', cursive; font-size: 2.5rem; text-align: center;">Ranking</h2>
+                <ul id="leaderboard-list" style="list-style: none; padding: 0; margin: 0; width: 100%;">
+                    <!-- Tutaj pojawią się wyniki -->
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dokładnie 8 Twoich haseł (bez JACKPOTa, on jest obsługiwany osobno na środku)
+        const phrases = [
+            "Energetyk w szkole", 
+            "Marta otwiera morde", 
+            "ide z ostatniej", 
+            "Spóźnie się+",
+            "Jebana Sekretarka", 
+            "rzep", 
+            "Drama", 
+            "Grajek"
+        ];
+
+        // Zapisywanie planszy i PINESEK w localStorage, żeby nie znikały po odświeżeniu
+        let savedBoard = JSON.parse(localStorage.getItem('graTerenowaBoard_3x3'));
+        let pinsList = JSON.parse(localStorage.getItem('graTerenowaPins_3x3')) || [];
+        let scores = JSON.parse(localStorage.getItem('graTerenowaScores_3x3')) || { "0deg": 0, "240deg": 0, "120deg": 0 };
+        
+        if (scores["180deg"] !== undefined) scores = { "0deg": 0, "240deg": 0, "120deg": 0 }; // Czyści punkty po aktualizacji kolorów
+
+        const playerNames = {
+            "0deg": "Maja",
+            "240deg": "Kinga",
+            "120deg": "Dawid"
+        };
+
+        // Jeśli nie ma zapisanej planszy (lub jest w starym formacie), losujemy nową
+        if (!savedBoard || savedBoard.length !== 8) {
+            phrases.sort(() => Math.random() - 0.5);
+            savedBoard = phrases;
+            localStorage.setItem('graTerenowaBoard_3x3', JSON.stringify(savedBoard));
+            
+            // Czyścimy wszystko przy nowej planszy
+            pinsList = [];
+            scores = { "0deg": 0, "240deg": 0, "120deg": 0 };
+            localStorage.setItem('graTerenowaPins_3x3', JSON.stringify(pinsList));
+            localStorage.setItem('graTerenowaScores_3x3', JSON.stringify(scores));
+            localStorage.removeItem('graTerenowaWonLines_3x3'); // Usuwamy pozostałości po starej wersji
+        }
+
+        const board = document.getElementById('board');
+        let phraseIndex = 0;
+
+        function renderLeaderboard() {
+            const list = document.getElementById('leaderboard-list');
+            list.innerHTML = '';
+            
+            // Sortujemy po największej ilości punktów
+            const sortedPlayers = ["0deg", "240deg", "120deg"].sort((a, b) => scores[b] - scores[a]);
+            const medals = ["🥇", "🥈", "🥉"];
+
+            sortedPlayers.forEach((color, index) => {
+                const li = document.createElement('li');
+                li.style.padding = "10px 15px";
+                li.style.margin = "8px 0";
+                li.style.background = "rgba(255,255,255,0.6)";
+                li.style.borderRadius = "15px";
+                li.style.fontSize = "1.2rem";
+                li.style.fontWeight = "bold";
+                li.style.color = "var(--dark-square)";
+                li.style.display = "flex";
+                li.style.justifyContent = "space-between";
+                li.style.boxShadow = "0 2px 5px rgba(0,0,0,0.05)";
+                
+                li.innerHTML = `<span>${medals[index]} ${playerNames[color]}</span> <span>${scores[color]} pkt</span>`;
+                list.appendChild(li);
+            });
+        }
+
+        function throwConfetti() {
+            const emojis = ['🎉', '🎊', '✨', '🏆', '⭐', '🎈'];
+            for (let i = 0; i < 45; i++) {
+                const conf = document.createElement('div');
+                conf.classList.add('confetti-piece');
+                conf.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+                conf.style.left = Math.random() * 100 + 'vw'; // Pozycja X
+                conf.style.fontSize = (Math.random() * 20 + 20) + 'px'; // Rozmiar
+                const duration = Math.random() * 3 + 2; // Czas od 2 do 5 sekund
+                conf.style.animationDuration = duration + 's';
+                conf.style.animationDelay = (Math.random() * 0.5) + 's';
+                document.body.appendChild(conf);
+                
+                setTimeout(() => conf.remove(), (duration + 0.5) * 1000); // Usuwanie
+            }
+        }
+
+        function checkWins(isAddingPin) {
+            let oldTotalScore = scores["0deg"] + scores["240deg"] + scores["120deg"];
+            let newScores = { "0deg": 0, "240deg": 0, "120deg": 0 };
+
+            const winningCombinations = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rzędy poziome
+                [0, 3, 6], [1, 4, 7], [2, 5, 8], // Kolumny pionowe
+                [0, 4, 8], [2, 4, 6]             // Skosy
+            ];
+
+            ["0deg", "240deg", "120deg"].forEach(color => {
+                // Zliczamy ile dany gracz ma pinesek w poszczególnych kafelkach (pole 4 to darmowy JACKPOT)
+                let pinCounts = {0:0, 1:0, 2:0, 3:0, 4:999, 5:0, 6:0, 7:0, 8:0};
+                pinsList.forEach(p => {
+                    if (p.color === color) pinCounts[p.cellIndex]++;
+                });
+
+                winningCombinations.forEach((combo, index) => {
+                    // Ilość punktów z tej linii to najmniejsza liczba pinesek z tworzących ją kafelków
+                    let linesCompleted = Math.min(pinCounts[combo[0]], pinCounts[combo[1]], pinCounts[combo[2]]);
+                    if (linesCompleted > 0) {
+                        newScores[color] += linesCompleted;
+                    }
+                });
+            });
+
+            scores = newScores;
+            localStorage.setItem('graTerenowaScores_3x3', JSON.stringify(scores));
+            
+            let newTotalScore = scores["0deg"] + scores["240deg"] + scores["120deg"];
+
+            // Odpalamy konfetti tylko gdy wbiliśmy nową pineskę a wynik wzrósł
+            if (isAddingPin && newTotalScore > oldTotalScore) {
+                throwConfetti();
+            }
+            renderLeaderboard();
+        }
+
+        function saveAndRender(checkForWin = false) {
+            // Zapis
+            localStorage.setItem('graTerenowaPins_3x3', JSON.stringify(pinsList));
+
+            // Czyszczenie obecnych pinesek z planszy
+            document.querySelectorAll('.pin').forEach(p => p.remove());
+
+            // Renderowanie pinesek na nowo
+            pinsList.forEach(pin => {
+                const cell = document.querySelector(`.square[data-index="${pin.cellIndex}"]`);
+                if (cell) {
+                    const pinEl = document.createElement('div');
+                    pinEl.classList.add('pin');
+                    pinEl.innerText = '📍';
+                    pinEl.style.left = `${pin.x}px`;
+                    pinEl.style.top = `${pin.y}px`;
+                    pinEl.style.pointerEvents = 'auto';
+                    // Dynamiczne kolorowanie przez filtr hue-rotate + dodanie cienia
+                    pinEl.style.filter = `hue-rotate(${pin.color}) drop-shadow(2px 3px 3px rgba(0,0,0,0.4))`;
+
+                    // Kliknięcie w istniejącą pineskę ją USUWA
+                    pinEl.addEventListener('click', (e) => {
+                        e.stopPropagation(); // Zapobiega dodaniu nowej pineski pod spodem
+                        pinsList = pinsList.filter(p => p.id !== pin.id);
+                        saveAndRender();
+                    });
+
+                    cell.appendChild(pinEl);
+                }
+            });
+
+            // Zawsze obliczamy wynik na nowo (żeby np. ująć punkty gdy pineska jest usunięta)
+            checkWins(checkForWin);
+        }
+
+        // Pętla tworząca 9 okienek
+        for (let i = 0; i < 9; i++) {
+            const square = document.createElement('div');
+            square.className = 'square';
+            square.dataset.index = i; // Dodajemy atrybut do identyfikacji kafelka
+
+            // Polu numer 4 (czyli 5. w kolejności - sam środek) dajemy JACKPOT
+            if (i === 4) {
+                square.classList.add('center');
+                square.innerHTML = `
+                    <div class="center-star">⭐</div>
+                    <span class="square-text">JACKPOT</span>
+                `;
+            } else {
+                square.innerHTML = '<span class="square-text">' + savedBoard[phraseIndex] + '</span>';
+                phraseIndex++;
+            }
+
+            // Kliknięcie w kafelek DODAJE pineskę w miejscu kursora
+            square.addEventListener('click', function(e) {
+                const rect = this.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                const color = document.getElementById('pinColorSelect').value;
+
+                pinsList.push({ id: Date.now(), cellIndex: i, x, y, color });
+                saveAndRender(true); // Argument "true", bo sprawdzamy wygraną po dołożeniu pineski
+            });
+
+            board.appendChild(square);
+        }
+
+        renderLeaderboard(); // Pierwsze wyrenderowanie tabeli rankingowej
+        saveAndRender(); // Pierwsze wywołanie, żeby odtworzyć zapisane pineski
+
+        // Obsługa przycisku resetowania gry
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            if (confirm('Czy na pewno chcesz wyczyścić planszę i wylosować nowe hasła?')) {
+                localStorage.removeItem('graTerenowaBoard_3x3'); // Usuwa hasła
+                localStorage.removeItem('graTerenowaPins_3x3'); // Usuwa pineski
+                localStorage.removeItem('graTerenowaScores_3x3'); // Usuwa punkty
+                localStorage.removeItem('graTerenowaWonLines_3x3'); // Usuwa odblokowane linie
+                location.reload();
+            }
+        });
+    </script>
+</body>
+</html>
