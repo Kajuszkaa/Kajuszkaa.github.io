@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-width=1.0">
+    <title>Custom Roulette 67</title>
+    <!-- Biblioteka konfetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        /* --- STYLIZACJA WIZUALNA (CSS) --- */
+        
+        /* Zmienne globalne - definiują paletę kolorów w stylu Hextech / Prestige */
+        :root {
+            --bg-color: #09090b;       /* Bardzo ciemne tło */
+            --panel-bg: #111418;       /* Ciemnoszare tło paneli */
+            --border-color: #3e2e12;   /* Ciemnozłote obramowania */
+            --gold: #c8aa6e;           /* Główny złoty kolor (League of Legends) */
+            --gold-hover: #e2c792;     /* Jaśniejszy złoty na najechanie */
+            --gold-dark: #785a28;      /* Ciemny złoty do cieni i teł */
+            --blue-team: #0ac8b9;      /* Kolor Niebieskiej Drużyny */
+            --red-team: #e84057;       /* Kolor Czerwonej Drużyny */
+            --text-light: #f0e6d2;     /* Jasny, pergaminowy kolor tekstu */
+        }
+
+        /* Ustawienia dla całego dokumentu */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-light);
+            /* Ukrywamy paski przewijania na poziomie całego okna, aby "szuflady" mogły płynnie jeździć */
+            overflow: hidden; 
+        }
+
+        /* Stylizacja własnego paska przewijania (tylko dla długich list) */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-color); }
+        ::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+
+        /* --- LOGIKA ZAKŁADEK / SZUFLAD (SLIDER) --- */
+        .step-container {
+            display: flex;
+            width: 300vw; 
+            height: 100vh;
+            transition: transform 0.6s ease-in-out; 
+        }
+
+        .step {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow-y: auto; 
+        }
+
+        /* Typografia */
+        h1 {
+            color: var(--gold);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+            font-size: 2.5rem;
+            text-align: center;
+            text-shadow: 0 0 10px rgba(200, 170, 110, 0.3);
+        }
+
+        .subtitle {
+            color: #a09b8c;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        /* Główne panele (szare okna na środku ekranu) */
+        .panel {
+            background-color: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 40px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .inputs-column {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
+            max-width: 400px; 
+            margin: 0 auto 30px auto;
+        }
+
+        @media (max-width: 768px) {
+            .teams-wrapper { flex-direction: column; }
+        }
+
+        /* Pojedyncze pole tekstowe */
+        .player-input {
+            display: flex;
+            align-items: center;
+            background: #000;
+            border: 1px solid var(--gold-dark);
+            border-radius: 5px;
+            padding: 10px 15px;
+            transition: border-color 0.3s;
+        }
+
+        .player-input:focus-within { border-color: var(--gold); }
+        .player-input label { color: var(--gold); font-weight: bold; margin-right: 10px; width: 25px; }
+        .player-input input { background: transparent; border: none; color: white; font-size: 16px; outline: none; width: 100%; }
+
+        /* Złote Przyciski */
+        .gold-btn {
+            background: linear-gradient(180deg, var(--gold) 0%, var(--gold-dark) 100%);
+            border: 2px solid #f0e6d2;
+            color: #0a0a0c;
+            padding: 15px 40px;
+            font-size: 18px;
+            font-weight: bold;
+            text-transform: uppercase;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(200, 170, 110, 0.2);
+        }
+
+        .gold-btn:hover:not(:disabled) {
+            background: linear-gradient(180deg, var(--gold-hover) 0%, var(--gold) 100%);
+            box-shadow: 0 0 25px rgba(200, 170, 110, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .gold-btn:disabled {
+            background: #333;
+            border-color: #555;
+            color: #777;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* Kontener na dwie drużyny */
+        .teams-wrapper {
+            display: flex;
+            gap: 30px;
+            width: 100%;
+            max-width: 1100px;
+        }
+
+        .team {
+            flex: 1;
+            background: var(--panel-bg);
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 1px solid var(--border-color);
+        }
+
+        .blue-team { border-top: 4px solid var(--blue-team); }
+        .red-team { border-top: 4px solid var(--red-team); }
+
+        .team h2 {
+            text-align: center;
+            margin-top: 0;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .blue-team h2 { color: var(--blue-team); }
+        .red-team h2 { color: var(--red-team); }
+
+        .player-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .player-row:last-child { border-bottom: none; }
+        .player-name { font-size: 18px; font-weight: 600; }
+        .player-role-small { font-size: 13px; color: var(--gold); opacity: 0.8; margin-top: 3px; }
+
+        /* --- ANIMACJE 3D (ODWRACANIE KART) --- */
+        .flip-container {
+            perspective: 1000px; 
+            cursor: pointer;
+        }
+
+        .role-flip { width: 130px; height: 45px; }
+        .champ-flip { width: 220px; height: 55px; }
+
+        .flipper {
+            transition: 0.6s cubic-bezier(0.4, 0.0, 0.2, 1); 
+            transform-style: preserve-3d; 
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .flip-container.revealed .flipper {
+            transform: rotateY(180deg);
+        }
+
+        /* --- Animacja Rzutu Monetą (Reroll) --- */
+        .flip-container.revealed .flipper.coin-flip-anim {
+            /* Obraca kartę dodatkowo o 360 stopni (razem 540) z efektem oddalenia/przybliżenia (scale) */
+            animation: coinFlip 0.8s ease-in-out forwards;
+        }
+
+        @keyframes coinFlip {
+            0%   { transform: rotateY(180deg) scale(1); }
+            25%  { transform: rotateY(270deg) scale(1.1); }
+            50%  { transform: rotateY(360deg) scale(1.2); } /* Karta obrócona przodem ("?"), tył jest niewidoczny - idealny moment na podmianę DOM! */
+            75%  { transform: rotateY(450deg) scale(1.1); }
+            100% { transform: rotateY(540deg) scale(1); }   /* Wraca do widoku tyłu (540 = 180 + 360) */
+        }
+
+        .front, .back {
+            backface-visibility: hidden; 
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+        }
+
+        .front {
+            background: #1a1a1a;
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            font-size: 22px;
+            font-weight: bold;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+        }
+
+        .front:hover {
+            background: #2a2a2a;
+            box-shadow: 0 0 15px rgba(200, 170, 110, 0.4);
+        }
+
+        .back {
+            transform: rotateY(180deg); 
+            background: linear-gradient(135deg, var(--gold-dark) 0%, var(--gold) 100%);
+            color: #000;
+            font-weight: bold;
+            font-size: 16px;
+            border: 1px solid #f0e6d2;
+        }
+
+        .champ-back {
+            justify-content: flex-start;
+            padding-left: 5px;
+            background: #111;
+            color: var(--gold);
+            border: 1px solid var(--gold);
+        }
+
+        .champ-portrait {
+            width: 45px;
+            height: 45px;
+            border-radius: 4px;
+            margin-right: 12px;
+            border: 1px solid var(--gold);
+            object-fit: cover;
+        }
+
+        /* --- STYLIZACJA PRZYCISKU REROLL --- */
+        .reroll-btn {
+            background: linear-gradient(180deg, var(--gold) 0%, var(--gold-dark) 100%);
+            border: 1px solid #f0e6d2;
+            color: #000;
+            border-radius: 5px;
+            cursor: pointer;
+            padding: 8px 12px;
+            font-size: 16px;
+            margin-left: 10px;
+            display: none; 
+            transition: transform 0.2s, filter 0.2s;
+            box-shadow: 0 0 10px rgba(200, 170, 110, 0.2);
+            flex-shrink: 0;
+        }
+
+        .reroll-btn:hover {
+            transform: scale(1.1);
+            filter: brightness(1.2);
+        }
+
+        /* --- BATTLE BAR --- */
+        .battle-bar {
+            width: 100%;
+            height: 40px;
+            background-color: var(--red-team);
+            border-radius: 20px;
+            border: 2px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+        }
+
+        .battle-fill {
+            height: 100%;
+            width: 50%; /* Startuje równo w połowie */
+            background-color: var(--blue-team);
+            transition: width 0.6s ease-in-out; /* Szybka zmiana dla efektu walki */
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+
+        /* --- DYSKRETNA STOPKA AUTORSKA --- */
+        .footer {
+            position: fixed;
+            bottom: 8px;
+            left: 0;
+            width: 100vw;
+            text-align: center;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.15); /* Bardzo niska widoczność */
+            pointer-events: none; /* Nie blokuje kliknięć, przenika na wylot */
+            z-index: 9999;
+            letter-spacing: 1px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Główny kontener animowany w lewo/prawo -->
+    <div id="app" class="step-container">
+        
+        <!-- ================= KROK 1: WPISYWANIE GRACZY ================= -->
+        <div class="step" id="step1">
+            <div class="panel">
+                <h1>Custom Roulette 67</h1>
+                <p class="subtitle">Wprowadź 10 graczy, aby wylosować zbalansowaną grę.</p>
+                
+                <div style="display: flex; gap: 20px; width: 100%; max-width: 400px; margin-bottom: 20px;">
+                    <div class="player-input" style="flex: 1; border-color: var(--blue-team);">
+                        <input type="text" id="team1-name" placeholder="Nazwa Team 1 (opcjonalnie)" autocomplete="off" style="text-align: center;" />
+                    </div>
+                    <div class="player-input" style="flex: 1; border-color: var(--red-team);">
+                        <input type="text" id="team2-name" placeholder="Nazwa Team 2 (opcjonalnie)" autocomplete="off" style="text-align: center;" />
+                    </div>
+                </div>
+
+                <div class="inputs-column" id="inputs-container"></div>
+                
+                <button id="btn-step1" class="gold-btn">Wylosuj składy</button>
+            </div>
+        </div>
+
+        <!-- ================= KROK 2: ODKRYWANIE RÓL ================= -->
+        <div class="step" id="step2">
+            <h1>Losowanie Ról</h1>
+            <p class="subtitle">Kliknij w karty ze znakiem zapytania, aby odkryć przypisane linie.</p>
+            
+            <div class="teams-wrapper">
+                <div class="team blue-team">
+                    <h2>Niebieska Drużyna</h2>
+                    <div id="team1-roles"></div>
+                </div>
+                <div class="team red-team">
+                    <h2>Czerwona Drużyna</h2>
+                    <div id="team2-roles"></div>
+                </div>
+            </div>
+            
+            <button id="btn-step2" class="gold-btn" style="margin-top: 40px;">Dalej: Losuj Championów ➔</button>
+        </div>
+
+        <!-- ================= KROK 3: ODKRYWANIE POSTACI ================= -->
+        <div class="step" id="step3">
+            <h1>Losowanie Postaci</h1>
+            <p class="subtitle">Bohaterowie przydzieleni! Klikaj po kolei karty, aby budować napięcie!</p>
+            
+            <div class="teams-wrapper">
+                <div class="team blue-team">
+                    <h2>Niebieska Drużyna</h2>
+                    <div id="team1-champs"></div>
+                </div>
+                <div class="team red-team">
+                    <h2>Czerwona Drużyna</h2>
+                    <div id="team2-champs"></div>
+                </div>
+            </div>
+            
+            <button id="btn-battle" class="gold-btn" style="margin-top: 40px;" onclick="startBattle()">Kto wygra?</button>
+
+            <div id="battle-container" style="display: none; width: 100%; max-width: 800px; margin-top: 30px; text-align: center;">
+                <div class="battle-bar">
+                    <div id="battle-fill" class="battle-fill"></div>
+                </div>
+                <h2 id="winner-text" style="margin-top: 20px; color: var(--gold); opacity: 0; transition: opacity 0.5s;"></h2>
+            </div>
+
+            <button class="gold-btn" style="margin-top: 20px;" onclick="playAutumnTransition(() => location.reload())">Zagraj ponownie</button>
+        </div>
+
+    </div>
+
+    <!-- Dyskretny podpis autorski -->
+    <div class="footer">By Kajuszkaa</div>
+
+    <!-- --- LOGIKA APLIKACJI (JAVASCRIPT) --- -->
+    <script>
+        // --- ANIMACJA JESIENNA ---
+        function playAutumnTransition(callback) {
+            const emojis = ['🍁', '🍂', '🍃', '🎃', '🍄', '☕'];
+            const container = document.createElement('div');
+            container.style.position = 'fixed';
+            container.style.top = '0';
+            container.style.left = '0';
+            container.style.width = '100vw';
+            container.style.height = '100vh';
+            container.style.pointerEvents = 'none'; // nie blokuje kliknięć
+            container.style.zIndex = '9999';
+            container.style.overflow = 'hidden'; 
+            document.body.appendChild(container);
+
+            for (let i = 0; i < 30; i++) {
+                const particle = document.createElement('div');
+                particle.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+                particle.style.position = 'absolute';
+                particle.style.left = '-10vw';
+                
+                // Ograniczony rozrzut w pionie (od 35vh do 65vh) - emotki lecą bliżej siebie w środkowej części
+                particle.style.top = (Math.random() * 30 + 35) + 'vh';
+                
+                particle.style.fontSize = (Math.random() * 20 + 20) + 'px';
+                
+                const duration = Math.random() * 1.5 + 1; // 1s - 2.5s
+                
+                particle.style.transition = `left ${duration}s linear, transform ${duration}s linear`;
+                
+                container.appendChild(particle);
+                
+                // Reflow by aktywować przejście CSS
+                void particle.offsetWidth;
+                
+                particle.style.left = '110vw';
+                particle.style.transform = `rotate(${Math.random() * 720 - 360}deg)`;
+            }
+
+            // Najdłuższy czas przelotu to 2.5s (2500ms)
+            setTimeout(() => {
+                container.remove();
+                if (typeof callback === 'function') callback();
+            }, 2500);
+        }
+
+        // --- KONFIGURACJA DŹWIĘKÓW ---
+        // Tutaj wklej ścieżki do swoich plików audio. 
+        // Skrypt domyślnie użyje tych zmiennych.
+        const AUDIO_SPARKLE_PATH = "sparkle.mp3";
+        const AUDIO_EARRAPE_PATH = "earrape.mp3";
+        const AUDIO_BATTLE_PATH = "battle.mp3";
+        const AUDIO_WIN_PATH = "win.mp3";
+
+        // Preload obiektów Audio
+        const audioSparkle = new Audio(AUDIO_SPARKLE_PATH);
+        audioSparkle.volume = 0.5; // Głośność 50%
+        
+        const audioEarrape = new Audio(AUDIO_EARRAPE_PATH);
+        audioEarrape.volume = 1.0; // Głośność 100% dla troll sounda
+
+        const audioBattle = new Audio(AUDIO_BATTLE_PATH);
+        audioBattle.volume = 0.3; // Głośność 30% dla walki w tle
+
+        const audioWin = new Audio(AUDIO_WIN_PATH);
+        audioWin.volume = 1.0; // Głośność 100% dla wygranej
+
+        // Funkcja obsługująca odtwarzanie (z szansą na Troll Sound)
+        function playRevealSound() {
+            // 5% szansy na earrape
+            const isTroll = Math.random() < 0.05;
+            
+            // Klonujemy noda, by kliknięcia mogły nakładać się na siebie płynnie (bez ucinania poprzedniego dźwięku)
+            let soundToPlay;
+            if (isTroll) {
+                soundToPlay = audioEarrape.cloneNode();
+                soundToPlay.volume = 1.0;
+            } else {
+                soundToPlay = audioSparkle.cloneNode();
+                soundToPlay.volume = 0.5;
+            }
+
+            // Odtwarzanie - obsługa promisy dla Autoplay Policy przeglądarek
+            soundToPlay.play().catch(error => {
+                console.warn("Przeglądarka zablokowała autoodtwarzanie dźwięku:", error);
+            });
+        }
+
+        // Pula ról
+        const ROLES = ["Top", "Jungle", "Mid", "ADC", "Support"];
+        
+        // --- META LOGIKA LOSOWANIA POSTACI ---
+        const ROLE_MAP = {
+            "Top": ["Aatrox", "Akali", "Aurora", "Camille", "Chogath", "Darius", "DrMundo", "Fiora", "Garen", "Gnar", "Gragas", "Gwen", "Illaoi", "Irelia", "Jax", "Jayce", "KSante", "Kayle", "Kennen", "Kled", "Malphite", "Mordekaiser", "Nasus", "Olaf", "Ornn", "Pantheon", "Poppy", "Quinn", "Renekton", "Riven", "Rumble", "Sett", "Shen", "Singed", "Sion", "TahmKench", "Teemo", "Trundle", "Tryndamere", "Urgot", "Vayne", "Volibear", "MonkeyKing", "Yasuo", "Yone", "Yorick"],
+            "Jungle": ["Amumu", "Belveth", "Briar", "Diana", "Ekko", "Elise", "Evelynn", "Fiddlesticks", "Gragas", "Graves", "Hecarim", "Ivern", "JarvanIV", "Karthus", "Kayn", "Khazix", "Kindred", "LeeSin", "Lillia", "MasterYi", "Nidalee", "Nocturne", "Nunu", "Pantheon", "Poppy", "Rammus", "RekSai", "Rengar", "Sejuani", "Shaco", "Shyvana", "Skarner", "Sylas", "Taliyah", "Talon", "Trundle", "Udyr", "Vi", "Viego", "Volibear", "Warwick", "MonkeyKing", "XinZhao", "Zac"],
+            "Mid": ["Ahri", "Akali", "Akshan", "Anivia", "Annie", "Aurora", "AurelionSol", "Azir", "Cassiopeia", "Corki", "Diana", "Ekko", "Fizz", "Galio", "Heimerdinger", "Hwei", "Irelia", "Kassadin", "Katarina", "Leblanc", "Lissandra", "Lux", "Malzahar", "Naafiri", "Neeko", "Orianna", "Qiyana", "Ryze", "Smolder", "Sylas", "Syndra", "Taliyah", "Talon", "TwistedFate", "Veigar", "Vex", "Viktor", "Vladimir", "Xerath", "Yasuo", "Yone", "Zed", "Ziggs", "Zoe"],
+            "ADC": ["Aphelios", "Ashe", "Caitlyn", "Draven", "Ezreal", "Jhin", "Jinx", "Kaisa", "Kalista", "KogMaw", "Lucian", "MissFortune", "Nilah", "Samira", "Sivir", "Smolder", "Tristana", "Twitch", "Varus", "Vayne", "Xayah", "Zeri"],
+            "Support": ["Alistar", "Ashe", "Bard", "Blitzcrank", "Brand", "Braum", "Heimerdinger", "Janna", "Karma", "Leona", "Lulu", "Lux", "Maokai", "Milio", "Morgana", "Nami", "Nautilus", "Pantheon", "Pyke", "Rakan", "Rell", "Renata", "Senna", "Seraphine", "Sona", "Soraka", "Swain", "TahmKench", "Taric", "Thresh", "Velkoz", "Xerath", "Yuumi", "Zilean", "Zyra"]
+        };
+
+        // Główne zmienne przechowujące stan
+        let team1 = [];
+        let team2 = [];
+        let latestPatch = ""; 
+        let allChampsData = []; 
+        let usedChampionsIds = new Set(); 
+
+        let customTeam1Name = "Niebieska Drużyna";
+        let customTeam2Name = "Czerwona Drużyna";
+
+        function shuffleArray(array) {
+            let shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        function getRandomChampionForRole(role) {
+            const validIds = ROLE_MAP[role] || [];
+            let rolePool = allChampsData.filter(c => validIds.includes(c.id));
+            if (rolePool.length === 0) rolePool = allChampsData; 
+            
+            let availablePool = rolePool.filter(c => !usedChampionsIds.has(c.id));
+            if (availablePool.length === 0) availablePool = rolePool; 
+            
+            const randomIndex = Math.floor(Math.random() * availablePool.length);
+            return availablePool[randomIndex];
+        }
+
+        // KROK 1
+        function initInputs() {
+            const container = document.getElementById('inputs-container');
+            for (let i = 1; i <= 10; i++) {
+                container.innerHTML += `
+                    <div class="player-input">
+                        <label>${i}.</label>
+                        <input type="text" id="player${i}" placeholder="Nick gracza ${i}..." autocomplete="off" />
+                    </div>
+                `;
+            }
+        }
+        window.onload = initInputs;
+
+        function slideToStep(stepIndex) {
+            document.getElementById('app').style.transform = `translateX(-${stepIndex * 100}vw)`;
+        }
+
+        document.getElementById('btn-step1').addEventListener('click', () => {
+            // Własne nazwy drużyn
+            let t1Input = document.getElementById('team1-name').value.trim();
+            let t2Input = document.getElementById('team2-name').value.trim();
+            customTeam1Name = t1Input !== "" ? t1Input : "Niebieska Drużyna";
+            customTeam2Name = t2Input !== "" ? t2Input : "Czerwona Drużyna";
+
+            // Aktualizacja nagłówków w UI
+            document.querySelectorAll('.blue-team h2').forEach(el => el.innerText = customTeam1Name);
+            document.querySelectorAll('.red-team h2').forEach(el => el.innerText = customTeam2Name);
+
+            let allPlayers = [];
+            for (let i = 1; i <= 10; i++) {
+                let name = document.getElementById(`player${i}`).value.trim();
+                if (name === "") name = `Gracz ${i}`; 
+                allPlayers.push(name);
+            }
+            allPlayers = shuffleArray(allPlayers);
+            
+            const team1Roles = shuffleArray(ROLES);
+            const team2Roles = shuffleArray(ROLES);
+            
+            team1 = allPlayers.slice(0, 5).map((p, i) => ({ name: p, role: team1Roles[i] }));
+            team2 = allPlayers.slice(5, 10).map((p, i) => ({ name: p, role: team2Roles[i] }));
+            
+            renderRolesCards(team1, 'team1-roles');
+            renderRolesCards(team2, 'team2-roles');
+            
+            playAutumnTransition();
+            slideToStep(1);
+        });
+
+        function renderRolesCards(teamArray, containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            teamArray.forEach(player => {
+                container.innerHTML += `
+                    <div class="player-row">
+                        <div class="player-name">${player.name}</div>
+                        <div class="flip-container role-flip" onclick="revealRoleCard(this)">
+                            <div class="flipper">
+                                <div class="front">?</div>
+                                <div class="back">${player.role}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function revealRoleCard(cardElement) {
+            if (!cardElement.classList.contains('revealed')) {
+                cardElement.classList.add('revealed');
+                playRevealSound(); // Dźwięk również przy rolach!
+            }
+        }
+
+        // KROK 2 -> 3
+        document.getElementById('btn-step2').addEventListener('click', async () => {
+            const btn = document.getElementById('btn-step2');
+            btn.innerText = "Łączenie z API Riotu..."; 
+            btn.disabled = true; 
+            
+            try {
+                const versionRes = await fetch('https://ddragon.leagueoflegends.com/api/versions.json');
+                const versionsArray = await versionRes.json();
+                latestPatch = versionsArray[0]; 
+                
+                const champsRes = await fetch(`https://ddragon.leagueoflegends.com/cdn/${latestPatch}/data/pl_PL/champion.json`);
+                const champsData = await champsRes.json();
+                
+                allChampsData = Object.values(champsData.data);
+                usedChampionsIds.clear(); 
+                
+                const assignChampionToPlayer = (player) => {
+                    const selectedChampion = getRandomChampionForRole(player.role);
+                    usedChampionsIds.add(selectedChampion.id);
+                    player.champion = selectedChampion;
+                };
+                
+                team1.forEach(assignChampionToPlayer);
+                team2.forEach(assignChampionToPlayer);
+                
+                renderChampsCards(team1, 'team1-champs', 1);
+                renderChampsCards(team2, 'team2-champs', 2);
+                
+                playAutumnTransition();
+                slideToStep(2);
+            } catch (error) {
+                console.error("Wystąpił błąd podczas komunikacji z Data Dragon API:", error);
+                btn.innerText = "Błąd pobierania API. Spróbuj ponownie!";
+                btn.disabled = false;
+            }
+        });
+
+        // REROLL
+        function renderChampsCards(teamArray, containerId, teamNum) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            
+            teamArray.forEach((player, index) => {
+                const champImgUrl = `https://ddragon.leagueoflegends.com/cdn/${latestPatch}/img/champion/${player.champion.image.full}`;
+                const flipperId = `team${teamNum}-player${index}-flipper`;
+                const cardBackId = `team${teamNum}-player${index}-back`;
+                const btnId = `team${teamNum}-player${index}-reroll`;
+                
+                container.innerHTML += `
+                    <div class="player-row">
+                        <div>
+                            <div class="player-name">${player.name}</div>
+                            <div class="player-role-small">${player.role}</div>
+                        </div>
+                        <div style="display: flex; align-items: center;">
+                            <div class="flip-container champ-flip" onclick="revealChampCard(this, '${btnId}')">
+                                <div class="flipper" id="${flipperId}">
+                                    <div class="front">?</div>
+                                    <div class="back champ-back" id="${cardBackId}">
+                                        <img src="${champImgUrl}" class="champ-portrait" alt="Ikona postaci" loading="lazy">
+                                        <span>${player.champion.name}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <button id="${btnId}" class="reroll-btn" title="Wylosuj nową postać" onclick="rerollChampion(${teamNum}, ${index}, this, '${cardBackId}', '${flipperId}')">🎲</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function revealChampCard(cardElement, btnId) {
+            if (!cardElement.classList.contains('revealed')) {
+                cardElement.classList.add('revealed'); 
+                playRevealSound(); // Dźwięk dla odkrywania karty
+                
+                const btn = document.getElementById(btnId);
+                if (btn) btn.style.display = 'block';
+            }
+        }
+
+        function rerollChampion(teamNum, playerIndex, btnElement, cardBackId, flipperId) {
+            btnElement.style.display = 'none'; // Zużycie przycisku
+            
+            let player = teamNum === 1 ? team1[playerIndex] : team2[playerIndex];
+            
+            // Losowanie nowej postaci
+            usedChampionsIds.delete(player.champion.id);
+            const newChampion = getRandomChampionForRole(player.role);
+            usedChampionsIds.add(newChampion.id);
+            player.champion = newChampion;
+            
+            // Animacja rzutu i dźwięk
+            playRevealSound();
+            const flipper = document.getElementById(flipperId);
+            
+            // Uruchomienie CSS'owego rzutu monetą na 0.8s
+            flipper.classList.add('coin-flip-anim');
+            
+            // 400ms = DOKŁADNIE połowa animacji z 0.8s (karta w tej chwili jest odwrócona przodem - znakiem zapytania - tył z portretem jest pod kątem 180st. do widza, więc 100% niewidoczny)
+            setTimeout(() => {
+                const cardBack = document.getElementById(cardBackId);
+                const champImgUrl = `https://ddragon.leagueoflegends.com/cdn/${latestPatch}/img/champion/${newChampion.image.full}`;
+                
+                // Cicha podmiana danych DOM, gdy tył jest schowany za znakiem zapytania
+                cardBack.innerHTML = `
+                    <img src="${champImgUrl}" class="champ-portrait" alt="Ikona postaci" loading="lazy">
+                    <span>${newChampion.name}</span>
+                `;
+            }, 400);
+
+            // Zabezpieczenie usuwające klasę po ukończeniu (800ms) by uniknąć glitchy w DOM
+            setTimeout(() => {
+                flipper.classList.remove('coin-flip-anim');
+            }, 800);
+        }
+
+        // --- MASZYNA LOSUJĄCA ZWYCIĘZCĘ (KROK 4) ---
+        function startBattle() {
+            const btn = document.getElementById('btn-battle');
+            const battleContainer = document.getElementById('battle-container');
+            const battleFill = document.getElementById('battle-fill');
+            const winnerText = document.getElementById('winner-text');
+
+            // Ukrywamy przycisk i pokazujemy kontener walki
+            btn.style.display = 'none';
+            battleContainer.style.display = 'block';
+            winnerText.style.opacity = '0';
+            winnerText.innerText = '';
+            
+            // Odtwarzanie muzyki bitewnej
+            audioBattle.currentTime = 0;
+            audioBattle.play().catch(error => console.warn("Autoplay zablokowany:", error));
+            
+            // Losujemy zwycięzcę: 1 = Team 1 (Niebieski), 2 = Team 2 (Czerwony)
+            const winnerNum = Math.random() < 0.5 ? 1 : 2;
+            const finalWidth = winnerNum === 1 ? '100%' : '0%'; // 100% to cały niebieski, 0% to cały czerwony
+
+            let battleDuration = 5500; // 5.5 sekundy walki (wolniejsza i dłuższa)
+            let intervalTime = 600;    // Wolniejsze interwały, zsynchronizowane z transition (0.6s) w CSS
+            let elapsed = 0;
+
+            const battleInterval = setInterval(() => {
+                elapsed += intervalTime;
+                
+                // Szalone przeciąganie liny (losowe wychylenia 20% do 80%)
+                if (elapsed < battleDuration - 1000) {
+                    const randomWidth = Math.floor(Math.random() * 60) + 20; 
+                    battleFill.style.width = randomWidth + '%';
+                } else {
+                    // Końcowa sekunda - uderzenie zwycięzcy
+                    clearInterval(battleInterval);
+                    battleFill.style.width = finalWidth;
+                    
+                    // Zatrzymanie muzyki walki i odpalenie fanfar
+                    audioBattle.pause();
+                    audioWin.currentTime = 0;
+                    audioWin.play().catch(error => console.warn("Autoplay zablokowany:", error));
+
+                    // Odpalenie konfetti za pomocą canvas-confetti
+                    if (typeof confetti === 'function') {
+                        const teamColor = winnerNum === 1 ? '#0ac8b9' : '#e84057'; // Kolor wygranej drużyny z naszych zmiennych
+                        confetti({
+                            particleCount: 200,
+                            spread: 120,
+                            origin: { y: 0.6 },
+                            colors: ['#c8aa6e', teamColor, '#ffffff'], // Złoty + kolor drużyny + biały
+                            disableForReducedMotion: true
+                        });
+                    }
+                    
+                    setTimeout(() => {
+                        const winnerName = winnerNum === 1 ? customTeam1Name : customTeam2Name;
+                        winnerText.innerText = `Maszyna przewiduje zwycięstwo: ${winnerName}!`;
+                        winnerText.style.opacity = '1';
+                    }, 600); // opóźnienie równe dokładnie animacji CSS, aby pasek zdążył dojechać do końca
+                }
+            }, intervalTime);
+        }
+    </script>
+</body>
+</html>

@@ -3,11 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Estetyczny Plan Lekcji</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,600&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <title>Losowacz Customów LoL</title>
     <style>
+        /* --- STYLIZACJA (CSS) --- */
+        :root {
+            /* Kolorystyka w stylu League of Legends (Hextech / Dark) */
+            --bg-dark: #0a0a0c;
+            --panel-bg: #1e2328;
+            --border-color: #c8aa6e; /* Złoty / Hextech */
+            --border-hover: #f0e6d2;
+            --text-main: #f0e6d2;
+            --text-muted: #a09b8c;
+            --blue-team: #0ac8b9;
+            --red-team: #e84057;
+            --btn-bg: linear-gradient(to right, #c8aa6e, #8a6a32);
+            --btn-hover: linear-gradient(to right, #f0e6d2, #c8aa6e);
+        }
+
         * {
             box-sizing: border-box;
             margin: 0;
@@ -15,490 +27,479 @@
         }
 
         body {
-            /* Tło imitujące słoneczne cienie i rośliny */
-            background-image: url('https://images.unsplash.com/photo-1581888517319-5701726bbc44?q=80&w=1920&auto=format&fit=crop');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            font-family: 'Poppins', sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
             display: flex;
             justify-content: center;
-            align-items: center;
-            min-height: 100vh;
+            align-items: flex-start;
             padding: 40px 20px;
-            color: #333;
+            /* Subtelne tło z gradientem dla głębi */
+            background-image: radial-gradient(circle at top, #1a1c23 0%, var(--bg-dark) 80%);
         }
 
-        .glass-container {
-            /* Efekt szklanej tafli */
-            background: rgba(240, 238, 230, 0.65);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            border-radius: 40px;
-            padding: 30px 50px;
-            width: 100%;
-            max-width: 1300px;
-            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.1);
-        }
-
-        .header-title {
+        h1, h2, h3 {
+            color: var(--border-color);
             text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .header-title h1 {
-            font-family: 'Playfair Display', serif;
-            font-size: 3rem;
-            color: #4a5c39; /* Oliwkowa zieleń */
-            font-weight: 600;
-            margin-bottom: 5px;
-            letter-spacing: 1px;
-        }
-
-        .header-title p {
-            font-size: 0.9rem;
             text-transform: uppercase;
             letter-spacing: 2px;
-            color: #444;
-            font-weight: 500;
+            margin-bottom: 20px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
         }
 
-        .schedule-grid {
-            display: grid;
-            grid-template-columns: 110px repeat(5, 1fr);
-            gap: 10px;
-            align-items: stretch;
-        }
-
-        /* Dni tygodnia (Nagłówki kolumn) */
-        .day-header {
-            background-color: #5b6453;
-            color: #fff;
-            padding: 8px 0;
-            border-radius: 25px;
-            text-align: center;
-            font-weight: 500;
-            font-size: 0.95rem;
-            letter-spacing: 1px;
-        }
-
-        /* Etykiety czasowe po lewej */
-        .time-label {
+        .container {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.85rem;
-            color: #333;
-            font-weight: 500;
-            text-align: center;
+            flex-wrap: wrap;
+            gap: 40px;
+            max-width: 1200px;
+            width: 100%;
         }
 
-        /* Karty z lekcjami */
-        .class-card {
-            border-radius: 20px;
-            padding: 8px 10px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            transition: transform 0.2s ease;
+        .panel {
+            background-color: var(--panel-bg);
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid #333;
+            flex: 1;
+            min-width: 320px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+            position: relative;
+            overflow: hidden;
         }
 
-        .class-card:hover {
-            transform: scale(1.02);
-        }
-
-        .class-card strong {
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 2px;
-            line-height: 1.2;
-        }
-
-        .class-card span {
-            font-size: 0.7rem;
-            opacity: 0.9;
-            line-height: 1.2;
-        }
-
-        /* Kolory kafelków (na wzór zdjęcia) */
-        .filled {
-            background-color: rgba(74, 92, 57, 0.85); /* Ciemna oliwkowa zieleń */
-            color: #fff;
-        }
-
-        .vacant {
-            background: linear-gradient(135deg, rgba(45, 70, 40, 0.65) 0%, rgba(30, 50, 25, 0.4) 100%);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-top: 1px solid rgba(255, 255, 255, 0.3);
-            border-left: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.05), 0 8px 16px rgba(0, 0, 0, 0.1);
-            color: #fff;
-            justify-content: center;
-            cursor: pointer;
-            user-select: none; /* Zapobiega zaznaczaniu tekstu przy spam-klikaniu */
-        }
-        
-        .vacant strong {
-            font-size: 0.9rem;
-            opacity: 0.8;
-            margin: 0;
-        }
-
-        /* --- Ekran Ładowania --- */
-        .loader {
-            position: fixed;
+        /* Ozdobny pasek na górze panelu */
+        .panel::before {
+            content: '';
+            position: absolute;
             top: 0;
             left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-color: #5b6453; /* Zielony z nagłówków dni */
+            right: 0;
+            height: 4px;
+            background: var(--btn-bg);
+        }
+
+        /* --- KROK 1: Pola tekstowe --- */
+        .players-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .player-input-group {
             display: flex;
-            justify-content: center;
             align-items: center;
-            z-index: 10000;
-            transition: opacity 0.75s ease, visibility 0.75s ease;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid transparent;
+            border-radius: 6px;
+            padding: 5px 10px;
+            transition: border-color 0.3s;
         }
 
-        .loader.hidden {
-            opacity: 0;
-            visibility: hidden;
+        .player-input-group:focus-within {
+            border-color: var(--border-color);
         }
 
-        .loader-dots {
+        .player-input-group label {
+            width: 35px;
+            color: var(--border-color);
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .player-input-group input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            padding: 10px;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .player-input-group input::placeholder {
+            color: #555;
+        }
+
+        /* --- Przyciski --- */
+        .action-btn {
+            width: 100%;
+            background: var(--btn-bg);
+            color: #010a13;
+            border: none;
+            padding: 16px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            border-radius: 6px;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(200, 170, 110, 0.2);
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            background: var(--btn-hover);
+            box-shadow: 0 6px 20px rgba(200, 170, 110, 0.4);
+        }
+
+        .action-btn:disabled {
+            background: #333;
+            color: #777;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* --- KROK 2,3,4: Tabele drużyn --- */
+        .teams-wrapper {
             display: flex;
+            flex-direction: column;
             gap: 20px;
+            margin-bottom: 20px;
         }
 
-        .loader-dots div {
-            width: 25px;
-            height: 25px;
-            background-color: #f0eee6; /* Kolor tła kontenera */
-            border-radius: 50%;
-            animation: bounce-up-down 1.2s infinite ease-in-out;
+        .team-box {
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid transparent;
+            background: rgba(0,0,0,0.2);
         }
 
-        .loader-dots div:nth-child(1) { animation-delay: 0s; }
-        .loader-dots div:nth-child(2) { animation-delay: 0.2s; }
-        .loader-dots div:nth-child(3) { animation-delay: 0.4s; }
-
-        /* Responsywność dla mniejszych ekranów */
-        @media (max-width: 900px) {
-            body {
-                /* Naprawia krytyczny błąd "ucinania" góry i lewej strony na małych ekranach! */
-                align-items: flex-start;
-                padding: 15px 10px;
-            }
-
-            .schedule-grid {
-                /* Odpowiednia szerokość kolumn, by nazwy się nie gniotły */
-                grid-template-columns: 75px repeat(5, minmax(130px, 1fr));
-                gap: 10px;
-                overflow-x: auto;
-                -webkit-overflow-scrolling: touch; /* Płynne przewijanie na iOS */
-                padding-bottom: 15px;
-                scrollbar-width: none; /* Ukrywa pasek w przeglądarce Firefox */
-            }
-            
-            /* Ukrywa pasek przewijania w Chrome/Safari (zostawiamy czysty "swipe") */
-            .schedule-grid::-webkit-scrollbar {
-                display: none;
-            }
-
-            /* Zatrzymanie godzin w miejscu podczas przewijania (Sticky Column) */
-            .time-label {
-                position: sticky;
-                left: 0;
-                z-index: 10;
-                background: rgba(255, 255, 255, 0.65);
-                backdrop-filter: blur(15px);
-                -webkit-backdrop-filter: blur(15px);
-                border: 1px solid rgba(255, 255, 255, 0.4);
-                border-radius: 12px;
-                box-shadow: 4px 0 15px rgba(0, 0, 0, 0.08); /* Cień nadaje głębię nad przesuwającymi się kartami */
-            }
-
-            /* Pusty lewy górny róg też musi być "przyklejony" nałożony na resztę */
-            .schedule-grid > div:first-child {
-                position: sticky;
-                left: 0;
-                z-index: 11;
-            }
-
-            .glass-container {
-                padding: 25px 15px;
-                border-radius: 25px;
-            }
-            .header-title h1 {
-                font-size: 2.2rem;
-            }
-            .class-card strong {
-                font-size: 0.85rem;
-            }
-            .class-card span {
-                display: block; /* Przywracamy widoczność nauczycieli i sal na telefonie! */
-                font-size: 0.7rem;
-                margin-top: 3px;
-            }
+        .team-blue {
+            border-color: rgba(10, 200, 185, 0.3);
+            box-shadow: inset 0 0 20px rgba(10, 200, 185, 0.05);
         }
 
-        /* Dodatkowe poprawki celowane pod ekrany telefonów */
-        @media (max-width: 480px) {
-            .header-title h1 {
-                font-size: 1.8rem;
-            }
-            .header-title p {
-                font-size: 0.8rem;
-            }
-            .time-label {
-                font-size: 0.7rem;
-            }
-            .day-header {
-                font-size: 0.85rem;
-                padding: 6px 0;
-            }
+        .team-blue h3 { color: var(--blue-team); }
+
+        .team-red {
+            border-color: rgba(232, 64, 87, 0.3);
+            box-shadow: inset 0 0 20px rgba(232, 64, 87, 0.05);
         }
 
-        /* Animacja spadających kotków */
-        .falling-cat {
-            position: fixed;
-            top: -100px;
-            z-index: 9999;
-            pointer-events: none; /* Ignoruje kliknięcia, żeby spadający kot nie blokował myszki */
-            animation: fall linear forwards;
+        .team-red h3 { color: var(--red-team); }
+
+        .player-list {
+            list-style: none;
         }
 
-        @keyframes bounce-up-down {
-            0%, 100% {
-                transform: translateY(0);
-            }
-            50% {
-                transform: translateY(-25px);
-            }
+        .player-list li {
+            background: rgba(255,255,255,0.03);
+            margin-bottom: 8px;
+            padding: 12px 15px;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 3px solid transparent;
+            transition: all 0.3s;
         }
 
-        @keyframes fall {
-            0% { transform: translateY(0) rotate(-20deg); }
-            100% { transform: translateY(120vh) rotate(360deg); }
+        .team-blue .player-list li { border-left-color: var(--blue-team); }
+        .team-red .player-list li { border-left-color: var(--red-team); }
+
+        .player-name { 
+            font-weight: 600; 
+            font-size: 1.05rem; 
+        }
+        
+        .player-details {
+            text-align: right;
         }
 
-        /* Animacja liści na powitanie */
-        .falling-leaf {
-            position: fixed;
-            z-index: 9998;
-            pointer-events: none; /* Ignoruje kliknięcia */
-            animation: blow-wind linear forwards;
-            opacity: 0;
+        .player-role { 
+            color: var(--border-color); 
+            font-size: 0.9rem; 
+            font-weight: bold;
+            text-transform: uppercase;
         }
 
-        @keyframes blow-wind {
-            0% { left: -10%; transform: translateY(0) rotate(0deg); opacity: 0; }
-            10% { opacity: 1; }
-            80% { opacity: 1; }
-            100% { 
-                left: 110%; 
-                transform: translateY(15vh) rotate(720deg); 
-                opacity: 0; 
-            }
+        .player-champ { 
+            color: var(--text-muted); 
+            font-style: italic; 
+            font-size: 0.95rem;
+            margin-left: 8px;
+        }
+
+        /* --- Stany i animacje --- */
+        .hidden {
+            display: none !important;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Komunikat startowy */
+        .placeholder-msg {
+            text-align: center;
+            color: var(--text-muted);
+            margin-top: 60px;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+            .container { flex-direction: column; }
         }
     </style>
 </head>
 <body>
 
-    <div class="loader">
-        <div class="loader-dots">
-            <div></div>
-            <div></div>
-            <div></div>
-        </div>
-    </div>
-
-    <div class="glass-container">
-        <div class="header-title">
-            <h1>plan lekcji</h1>
-            <p>Rok Szkolny 2025/2026</p>
+    <div class="container fade-in">
+        <!-- LEWY PANEL - Wprowadzanie graczy -->
+        <div class="panel">
+            <h2>Krok 1: Gracze</h2>
+            <div id="inputs-container" class="players-grid">
+                <!-- Pola wygenerowane przez JavaScript -->
+            </div>
+            <button id="btn-teams" class="action-btn">Wylosuj Składy</button>
         </div>
 
-        <div class="schedule-grid">
-            <div></div>
-            <div class="day-header" style="grid-column: 2; grid-row: 1;">PON</div>
-            <div class="day-header" style="grid-column: 3; grid-row: 1;">WT</div>
-            <div class="day-header" style="grid-column: 4; grid-row: 1;">ŚR</div>
-            <div class="day-header" style="grid-column: 5; grid-row: 1;">CZW</div>
-            <div class="day-header" style="grid-column: 6; grid-row: 1;">PT</div>
-
-            <div class="time-label" style="grid-row: 2;">13:25 - 14:10</div>
-            <div class="time-label" style="grid-row: 3;">14:15 - 15:00</div>
-            <div class="time-label" style="grid-row: 4;">15:10 - 15:55</div>
-            <div class="time-label" style="grid-row: 5;">16:00 - 16:45</div>
-            <div class="time-label" style="grid-row: 6;">16:50 - 17:35</div>
-            <div class="time-label" style="grid-row: 7;">17:40 - 18:25</div>
-            <div class="time-label" style="grid-row: 8;">18:30 - 19:15</div>
-            <div class="time-label" style="grid-row: 9;">19:20 - 20:05</div>
-            <div class="time-label" style="grid-row: 10;">20:10 - 20:55</div>
-
-            <div class="class-card vacant" style="grid-column: 2; grid-row: 2 / 4;">
-                <strong>WOLNE</strong>
-            </div>
-            <div class="class-card filled" style="grid-column: 2; grid-row: 4;">
-                <strong>Język<br>polski</strong>
-                <span>Bondarchuk<br>s. 204</span>
-            </div>
-            <div class="class-card filled" style="grid-column: 2; grid-row: 5;">
-                <strong>Język<br>polski</strong>
-                <span>Bondarchuk<br>s. 204</span>
-            </div>
-            <div class="class-card filled" style="grid-column: 2; grid-row: 6;">
-                <strong>Język<br>polski</strong>
-                <span>Bondarchuk<br>s. 204</span>
-            </div>
-            <div class="class-card filled" style="grid-column: 2; grid-row: 7;">
-                <strong>Język<br>angielski</strong>
-                <span>Czarnowska<br>s. 204</span>
-            </div>
-            <div class="class-card filled" style="grid-column: 2; grid-row: 8;">
-                <strong>Język<br>angielski</strong>
-                <span>Czarnowska<br>s. 204</span>
-            </div>
-            <div class="class-card vacant" style="grid-column: 2; grid-row: 9 / 11;">
-                <strong>WOLNE</strong>
+        <!-- PRAWY PANEL - Wyniki -->
+        <div class="panel">
+            <h2>Wyniki Losowania</h2>
+            
+            <!-- Komunikat widoczny na start -->
+            <div id="placeholder-msg" class="placeholder-msg">
+                Wpisz nicki graczy po lewej stronie i kliknij <br>
+                <strong style="color: var(--border-color);">"Wylosuj Składy"</strong>, <br>aby rozpocząć zabawę.
             </div>
 
-            <div class="class-card vacant" style="grid-column: 3; grid-row: 2 / 6;">
-                <strong>WOLNE</strong>
-            </div>
-            <div class="class-card filled" style="grid-column: 3; grid-row: 6;">
-                <strong>Informatyka</strong>
-                <span>Boguszewicz s. 204</span>
-            </div>
-            <div class="class-card filled" style="grid-column: 3; grid-row: 7;">
-                <strong>Język ang.</strong>
-                <span>Czarnowska s. 204</span>
-            </div>
-            <div class="class-card filled" style="grid-column: 3; grid-row: 8;">
-                <strong>Jęz. polski</strong>
-                <span>Bondarchuk s. 204</span>
-            </div>
-            <div class="class-card filled" style="grid-column: 3; grid-row: 9;">
-                <strong>Informatyka</strong>
-                <span>Boguszewicz s. 204</span>
-            </div>
-            <div class="class-card vacant" style="grid-column: 3; grid-row: 10;">
-                <strong>WOLNE</strong>
-            </div>
+            <!-- Kontener na wyniki (ukryty na start) -->
+            <div id="results-area" class="hidden">
+                <div class="teams-wrapper">
+                    <!-- Niebieska drużyna -->
+                    <div class="team-box team-blue">
+                        <h3>Niebieska Drużyna</h3>
+                        <ul id="blue-list" class="player-list"></ul>
+                    </div>
 
-            <div class="class-card vacant" style="grid-column: 4; grid-row: 2 / 11;">
-                <strong>WOLNE</strong>
-            </div>
+                    <!-- Czerwona drużyna -->
+                    <div class="team-box team-red">
+                        <h3>Czerwona Drużyna</h3>
+                        <ul id="red-list" class="player-list"></ul>
+                    </div>
+                </div>
 
-            <div class="class-card vacant" style="grid-column: 5; grid-row: 2 / 11;">
-                <strong>WOLNE</strong>
-            </div>
-
-            <div class="class-card vacant" style="grid-column: 6; grid-row: 2 / 7;">
-                <strong>WOLNE</strong>
-            </div>
-            <div class="class-card filled" style="grid-column: 6; grid-row: 7;">
-                <strong>Matematyka</strong>
-                <br>
-                <span>Hatłas-Sowińska<br>s. 204</span>
-            </div>
-            <div class="class-card filled" style="grid-column: 6; grid-row: 8;">
-                <strong>Matematyka</strong>
-                <br>
-                <span>Hatłas-Sowińska<br>s. 204</span>
-            </div>
-            <div class="class-card filled" style="grid-column: 6; grid-row: 9;">
-                <strong>Matematyka</strong>
-                <br>
-                <span>Hatłas-Sowińska<br>s. 204</span>
-            </div>
-            <div class="class-card filled" style="grid-column: 6; grid-row: 10;">
-                <strong>Matematyka</strong>
-                <br>
-                <span>Hatłas-Sowińska<br>s. 204</span>
+                <!-- Przyciski do kolejnych kroków (ukryte na start) -->
+                <button id="btn-roles" class="action-btn hidden">Wylosuj Linie</button>
+                <button id="btn-champs" class="action-btn hidden">Wylosuj Postacie</button>
             </div>
         </div>
     </div>
-    <!-- to jest komentarz -->
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // --- Logika ekranu ładowania ---
-            const loader = document.querySelector('.loader');
-            // Ukryj loader po chwili, aby animacja była widoczna
-            setTimeout(() => {
-                if (loader) {
-                    loader.classList.add('hidden');
-                }
-                // Uruchom animację liści, gdy ekran ładowania zacznie znikać
-                setTimeout(spawnLeaves, 400);
-            }, 1800); // Czas w milisekundach
+        // ==========================================
+        // KONFIGURACJA I ZMIENNE
+        // ==========================================
+        
+        // Dostępne role (linie) na mapie
+        const ROLES = ["Top", "Jungle", "Mid", "ADC", "Support"];
+        
+        // Zmienne przechowujące aktualny stan aplikacji
+        let players = [];
+        let blueTeam = [];
+        let redTeam = [];
 
-            // Efekt powiewu liści przy załadowaniu strony
-            function spawnLeaves() {
-                const leavesEmojis = ['🍃', '🍂', '🍁', '🌿'];
-                const numLeaves = 75; // Zwiększona liczba liści dla lepszego efektu
+        // Pobieranie elementów interfejsu (HTML) do zmiennych, aby łatwo nimi zarządzać
+        const inputsContainer = document.getElementById('inputs-container');
+        const btnTeams = document.getElementById('btn-teams');
+        const btnRoles = document.getElementById('btn-roles');
+        const btnChamps = document.getElementById('btn-champs');
+        
+        const resultsArea = document.getElementById('results-area');
+        const placeholderMsg = document.getElementById('placeholder-msg');
+        const blueList = document.getElementById('blue-list');
+        const redList = document.getElementById('red-list');
 
-                for (let i = 0; i < numLeaves; i++) {
-                    const leaf = document.createElement('div');
-                    leaf.classList.add('falling-leaf');
-                    leaf.innerText = leavesEmojis[Math.floor(Math.random() * leavesEmojis.length)];
-                    
-                    leaf.style.top = `${Math.random() * 80}vh`; // Losowa wysokość początkowa
-                    leaf.style.fontSize = `${Math.random() * 20 + 20}px`; // Rozmiar od 20 do 40px
-                    
-                    const duration = Math.random() * 4 + 3; // Czas przelotu od 3s do 7s
-                    const delay = Math.random() * 1.5; // Opóźnienie startu od 0s do 1.5s
-                    leaf.style.animationDuration = `${duration}s`;
-                    leaf.style.animationDelay = `${delay}s`;
+        // ==========================================
+        // FUNKCJE POMOCNICZE
+        // ==========================================
 
-                    document.body.appendChild(leaf);
-                    setTimeout(() => { leaf.remove(); }, (duration + delay) * 1000); // Sprzątanie
-                }
+        // 1. Generowanie 10 pól do wpisania nicków przy starcie strony
+        function createInputs() {
+            for (let i = 1; i <= 10; i++) {
+                const div = document.createElement('div');
+                div.className = 'player-input-group';
+                div.innerHTML = `
+                    <label>${i}.</label>
+                    <input type="text" id="player${i}" placeholder="Nick gracza ${i}..." />
+                `;
+                inputsContainer.appendChild(div);
             }
+        }
 
-            const vacantCards = document.querySelectorAll('.class-card.vacant');
-            // Tablica z emoji łapek
-            const pawEmojis = ['🐾'];
+        // 2. Funkcja mieszająca tablicę (algorytm Fisher-Yates) - zapewnia 100% losowości
+        function shuffleArray(array) {
+            let shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                // Zamiana miejscami
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
 
-            vacantCards.forEach(card => {
-                card.addEventListener('pointerdown', (e) => {
-                    // e.button === 0 to lewe kliknięcie myszą LUB dotknięcie ekranu palcem
-                    if (e.button === 0) {
-                        spawnCat(e.clientX);
-                    }
-                });
+        // 3. Funkcja wyświetlająca drużyny na ekranie (aktualizuje HTML)
+        function renderTeams() {
+            // Czyszczenie aktualnych list HTML
+            blueList.innerHTML = '';
+            redList.innerHTML = '';
+
+            // Funkcja pomocnicza generująca HTML pojedynczego gracza
+            const generatePlayerHTML = (player) => {
+                let html = `<span class="player-name">${player.name}</span><div class="player-details">`;
+                if (player.role) {
+                    html += `<span class="player-role">${player.role}</span>`;
+                }
+                if (player.champion) {
+                    // Jeśli ma postać, dodajemy ją za rolą
+                    html += `<span class="player-champ">${player.role ? '|' : ''} ${player.champion}</span>`;
+                }
+                html += `</div>`;
+                return `<li>${html}</li>`;
+            };
+
+            // Dodawanie graczy do listy Niebieskich
+            blueTeam.forEach(player => {
+                blueList.innerHTML += generatePlayerHTML(player);
             });
 
-            function spawnCat(mouseX) {
-                const cat = document.createElement('div');
-                cat.classList.add('falling-cat');
-                
-                // Wybierz losową łapkę
-                cat.innerText = pawEmojis[Math.floor(Math.random() * pawEmojis.length)];
-                
-                // Rozrzut w poziomie - pojawia się mniej więcej tam gdzie kursor myszy
-                const offset = (Math.random() - 0.5) * 200; 
-                cat.style.left = `${mouseX + offset}px`;
-                
-                // Losowy czas spadania i rozmiar dla lepszego efektu
-                const duration = Math.random() * 2 + 1.5; // od 1.5s do 3.5s
-                cat.style.animationDuration = `${duration}s`;
-                const size = Math.random() * 30 + 30; // od 30px do 60px
-                cat.style.fontSize = `${size}px`;
+            // Dodawanie graczy do listy Czerwonych
+            redTeam.forEach(player => {
+                redList.innerHTML += generatePlayerHTML(player);
+            });
+        }
 
-                document.body.appendChild(cat);
+        // ==========================================
+        // GŁÓWNA LOGIKA - OBSŁUGA PRZYCISKÓW
+        // ==========================================
 
-                // Posprzątaj po kotku, jak już wyleci za ekran
-                setTimeout(() => { cat.remove(); }, duration * 1000);
+        // KROK 2: LOSOWANIE SKŁADÓW (Podział na 2 drużyny)
+        btnTeams.addEventListener('click', () => {
+            players = []; // Resetowanie listy w razie ponownego kliknięcia
+
+            // Zbieranie nicków ze wszystkich 10 pól
+            for (let i = 1; i <= 10; i++) {
+                let name = document.getElementById(`player${i}`).value.trim();
+                // Jeśli ktoś nie wpisał nicku, dajemy mu domyślny "Gracz X"
+                if (name === "") name = `Gracz ${i}`;
+                
+                // Tworzymy obiekt gracza (na początku nie ma roli ani postaci)
+                players.push({ name: name, role: null, champion: null });
+            }
+
+            // Losowe mieszanie listy graczy
+            const shuffledPlayers = shuffleArray(players);
+
+            // Podział graczy: pierwsi 5 to Niebiescy, kolejni 5 to Czerwoni
+            blueTeam = shuffledPlayers.slice(0, 5);
+            redTeam = shuffledPlayers.slice(5, 10);
+
+            // Aktualizacja wyglądu (ukrywamy komunikat startowy, pokazujemy wyniki)
+            placeholderMsg.classList.add('hidden');
+            resultsArea.classList.remove('hidden');
+            
+            // Renderowanie HTML
+            renderTeams();
+
+            // Zarządzanie przyciskami (pokazujemy Krok 3, ukrywamy Krok 4 i resetujemy jego stan w razie ponownego losowania)
+            btnRoles.classList.remove('hidden');
+            btnRoles.classList.add('fade-in');
+            
+            btnChamps.classList.add('hidden');
+            btnChamps.disabled = false;
+            btnChamps.innerText = "Wylosuj Postacie";
+        });
+
+        // KROK 3: LOSOWANIE LINII (Ról w grze)
+        btnRoles.addEventListener('click', () => {
+            // Mieszamy pulę 5 ról niezależnie dla każdej z drużyn
+            const blueRoles = shuffleArray(ROLES);
+            const redRoles = shuffleArray(ROLES);
+
+            // Przypisywanie wylosowanych ról graczom
+            blueTeam.forEach((player, index) => {
+                player.role = blueRoles[index];
+            });
+
+            redTeam.forEach((player, index) => {
+                player.role = redRoles[index];
+            });
+
+            // Aktualizacja widoku
+            renderTeams();
+
+            // Ukrywamy przycisk ról i pokazujemy kolejny krok: Losowanie Postaci
+            btnRoles.classList.add('hidden');
+            
+            btnChamps.classList.remove('hidden');
+            btnChamps.classList.add('fade-in');
+        });
+
+        // KROK 4: POBIERANIE Z API I LOSOWANIE POSTACI (Championów)
+        // Słowo 'async' oznacza, że funkcja wykonuje zapytania do internetu w tle
+        btnChamps.addEventListener('click', async () => {
+            // Zabezpieczenie przed wielokrotnym klikaniem podczas ładowania
+            btnChamps.disabled = true;
+            btnChamps.innerText = "Pobieranie danych z API Riot...";
+
+            try {
+                // Krok 4.1: Pobranie najnowszego numeru Patcha (wersji gry)
+                const versionResponse = await fetch('https://ddragon.leagueoflegends.com/api/versions.json');
+                const versions = await versionResponse.json();
+                const latestPatch = versions[0]; // Pierwszy element to najnowszy patch
+
+                // Krok 4.2: Pobranie aktualnej listy postaci dla tej konkretnej wersji w języku polskim
+                const champsResponse = await fetch(`https://ddragon.leagueoflegends.com/cdn/${latestPatch}/data/pl_PL/champion.json`);
+                const champsData = await champsResponse.json();
+                
+                // champsData.data to obiekt, wyciągamy z niego tylko nazwy postaci do tablicy
+                const allChampions = Object.values(champsData.data).map(champ => champ.name);
+
+                // Mieszamy pulę wszystkich postaci (ponad 160)
+                const shuffledChampions = shuffleArray(allChampions);
+
+                // Przypisujemy unikalne postacie każdemu z 10 graczy
+                // Używamy indeksów od 0 do 4 dla Niebieskich i od 5 do 9 dla Czerwonych
+                blueTeam.forEach((player, index) => {
+                    player.champion = shuffledChampions[index];
+                });
+
+                redTeam.forEach((player, index) => {
+                    player.champion = shuffledChampions[index + 5];
+                });
+
+                // Aktualizacja widoku z wylosowanymi postaciami
+                renderTeams();
+                
+                // Koniec procesu - ukrywamy przycisk
+                btnChamps.classList.add('hidden');
+
+            } catch (error) {
+                // W razie problemu z internetem lub API
+                console.error("Wystąpił błąd podczas pobierania danych:", error);
+                btnChamps.innerText = "Błąd pobierania! Spróbuj ponownie.";
+                btnChamps.disabled = false; // Pozwalamy kliknąć jeszcze raz
             }
         });
+
+        // ==========================================
+        // START APLIKACJI
+        // ==========================================
+        // Tworzymy pola tekstowe od razu po załadowaniu skryptu
+        createInputs();
+
     </script>
 </body>
 </html>
