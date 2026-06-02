@@ -22,6 +22,100 @@
             --text-light: #f0e6d2;     /* Jasny, pergaminowy kolor tekstu */
         }
 
+        /* --- ADVANCED OPTIONS DRAWER --- */
+        .advanced-toggle {
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(180deg, var(--panel-bg) 0%, #000 100%);
+            border: 1px solid var(--gold-dark);
+            border-top: none;
+            color: var(--gold);
+            padding: 8px 20px;
+            border-bottom-left-radius: 10px;
+            border-bottom-right-radius: 10px;
+            cursor: pointer;
+            z-index: 1001;
+            font-weight: bold;
+            font-size: 14px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            transition: all 0.3s ease;
+        }
+
+        .advanced-toggle:hover {
+            color: var(--gold-hover);
+            background: linear-gradient(180deg, var(--panel-bg) 0%, #1a1a1a 100%);
+        }
+
+        .advanced-drawer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            background: rgba(17, 20, 24, 0.95);
+            border-bottom: 2px solid var(--gold);
+            z-index: 1000;
+            transform: translateY(-100%);
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            justify-content: center;
+            padding: 40px 20px 20px 20px;
+            box-sizing: border-box;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+        }
+
+        .advanced-drawer.open {
+            transform: translateY(0);
+        }
+
+        .drawer-content {
+            display: flex;
+            gap: 30px;
+            max-width: 1000px;
+            width: 100%;
+        }
+
+        .drawer-section {
+            flex: 1;
+            background: #000;
+            border: 1px solid var(--gold-dark);
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .drawer-section h3 {
+            color: var(--gold);
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 16px;
+            text-align: center;
+            border-bottom: 1px solid var(--gold-dark);
+            padding-bottom: 5px;
+        }
+
+        .drawer-section textarea {
+            width: 100%;
+            height: 100px;
+            background: #111;
+            border: 1px solid #333;
+            color: #fff;
+            padding: 10px;
+            box-sizing: border-box;
+            border-radius: 4px;
+            resize: none;
+            font-family: inherit;
+        }
+        .drawer-section textarea:focus {
+            outline: none;
+            border-color: var(--gold);
+        }
+
+        @media (max-width: 768px) {
+            .drawer-content { flex-direction: column; }
+        }
+
         /* Ustawienia dla całego dokumentu */
         body {
             margin: 0;
@@ -340,6 +434,34 @@
 </head>
 <body>
 
+    <!-- PRZYCISK SZUFLADY -->
+    <div class="advanced-toggle" onclick="toggleAdvancedDrawer()">⚙️ Opcje Zaawansowane</div>
+
+    <!-- SZUFLADA OPCJI ZAAWANSOWANYCH -->
+    <div class="advanced-drawer" id="advanced-drawer">
+        <div class="drawer-content">
+            <div class="drawer-section">
+                <h3>A. Gotowe Składy (Nadpisanie)</h3>
+                <p style="font-size: 12px; color: #aaa; margin-top: 0; text-align: center;">Wpisz po 5 nicków. Ignoruje losowanie krok 1.</p>
+                <div style="display: flex; gap: 10px;">
+                    <div style="flex: 1;">
+                        <div style="color: var(--blue-team); font-size: 12px; margin-bottom: 5px; text-align: center;">Team Niebieski</div>
+                        <textarea id="override-team1" placeholder="Gracz1, Gracz2..."></textarea>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="color: var(--red-team); font-size: 12px; margin-bottom: 5px; text-align: center;">Team Czerwony</div>
+                        <textarea id="override-team2" placeholder="Gracz6, Gracz7..."></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="drawer-section">
+                <h3>B. Ochrona Początkujących</h3>
+                <p style="font-size: 12px; color: #aaa; margin-top: 0; text-align: center;">Wypisz nicki najsłabszych graczy (oddzielone przecinkami).</p>
+                <textarea id="beginners-input" placeholder="Słaby1, Słaby2..."></textarea>
+            </div>
+        </div>
+    </div>
+
     <!-- Główny kontener animowany w lewo/prawo -->
     <div id="app" class="step-container">
         
@@ -418,6 +540,11 @@
 
     <!-- --- LOGIKA APLIKACJI (JAVASCRIPT) --- -->
     <script>
+        function toggleAdvancedDrawer() {
+            const drawer = document.getElementById('advanced-drawer');
+            drawer.classList.toggle('open');
+        }
+
         // --- ANIMACJA JESIENNA ---
         function playAutumnTransition(callback) {
             const emojis = ['🍁', '🍂', '🍃', '🎃', '🍄', '☕'];
@@ -577,23 +704,87 @@
             document.querySelectorAll('.blue-team h2').forEach(el => el.innerText = customTeam1Name);
             document.querySelectorAll('.red-team h2').forEach(el => el.innerText = customTeam2Name);
 
-            let allPlayers = [];
-            for (let i = 1; i <= 10; i++) {
-                let name = document.getElementById(`player${i}`).value.trim();
-                if (name === "") name = `Gracz ${i}`; 
-                allPlayers.push(name);
+            // LOGIKA ZAAWANSOWANA:
+            let overrideTeam1Val = document.getElementById('override-team1').value.trim();
+            let overrideTeam2Val = document.getElementById('override-team2').value.trim();
+            let beginnersVal = document.getElementById('beginners-input').value.trim();
+
+            let team1Names = [];
+            let team2Names = [];
+
+            const parseNames = (str) => str.split(/[\n,]+/).map(s => s.trim()).filter(s => s !== "");
+
+            if (overrideTeam1Val || overrideTeam2Val) {
+                // TRYB A: OVERRIDE
+                let t1Parsed = parseNames(overrideTeam1Val);
+                let t2Parsed = parseNames(overrideTeam2Val);
+                
+                for(let i=0; i<5; i++) {
+                    team1Names.push(t1Parsed[i] || `Gracz N${i+1}`);
+                    team2Names.push(t2Parsed[i] || `Gracz C${i+1}`);
+                }
+            } else {
+                // POBIERANIE Z GŁÓWNYCH PÓL
+                let allPlayers = [];
+                for (let i = 1; i <= 10; i++) {
+                    let name = document.getElementById(`player${i}`).value.trim();
+                    if (name === "") name = `Gracz ${i}`; 
+                    allPlayers.push(name);
+                }
+
+                if (beginnersVal) {
+                    // TRYB B: Ochrona Początkujących
+                    let beginnersList = parseNames(beginnersVal);
+                    let weakPlayers = [];
+                    let goodPlayers = [];
+
+                    allPlayers.forEach(p => {
+                        if (beginnersList.some(b => p.toLowerCase() === b.toLowerCase())) {
+                            weakPlayers.push(p);
+                        } else {
+                            goodPlayers.push(p);
+                        }
+                    });
+
+                    weakPlayers = shuffleArray(weakPlayers);
+                    goodPlayers = shuffleArray(goodPlayers);
+
+                    // Rozdzielanie naprzemienne początkujących
+                    weakPlayers.forEach((wp, index) => {
+                        if (index % 2 === 0) {
+                            if(team1Names.length < 5) team1Names.push(wp);
+                            else team2Names.push(wp);
+                        } else {
+                            if(team2Names.length < 5) team2Names.push(wp);
+                            else team1Names.push(wp);
+                        }
+                    });
+
+                    // Dopełnianie pozostałymi
+                    goodPlayers.forEach(gp => {
+                        if (team1Names.length < 5) team1Names.push(gp);
+                        else team2Names.push(gp);
+                    });
+                } else {
+                    // Czysty random
+                    allPlayers = shuffleArray(allPlayers);
+                    team1Names = allPlayers.slice(0, 5);
+                    team2Names = allPlayers.slice(5, 10);
+                }
             }
-            allPlayers = shuffleArray(allPlayers);
             
             const team1Roles = shuffleArray(ROLES);
             const team2Roles = shuffleArray(ROLES);
             
-            team1 = allPlayers.slice(0, 5).map((p, i) => ({ name: p, role: team1Roles[i] }));
-            team2 = allPlayers.slice(5, 10).map((p, i) => ({ name: p, role: team2Roles[i] }));
+            team1 = team1Names.map((p, i) => ({ name: p, role: team1Roles[i] }));
+            team2 = team2Names.map((p, i) => ({ name: p, role: team2Roles[i] }));
             
             renderRolesCards(team1, 'team1-roles');
             renderRolesCards(team2, 'team2-roles');
             
+            // Ukryj szufladę jeśli jest otwarta
+            document.getElementById('advanced-drawer').classList.remove('open');
+
             playAutumnTransition();
             slideToStep(1);
         });
@@ -706,8 +897,6 @@
         }
 
         function rerollChampion(teamNum, playerIndex, btnElement, cardBackId, flipperId) {
-            btnElement.style.display = 'none'; // Zużycie przycisku
-            
             let player = teamNum === 1 ? team1[playerIndex] : team2[playerIndex];
             
             // Losowanie nowej postaci
@@ -720,23 +909,27 @@
             playRevealSound();
             const flipper = document.getElementById(flipperId);
             
-            // Uruchomienie CSS'owego rzutu monetą na 0.8s
+            // Reset animacji dla nieskończonego rerollu
+            flipper.classList.remove('coin-flip-anim');
+            void flipper.offsetWidth; // Wymuszenie reflow
             flipper.classList.add('coin-flip-anim');
             
-            // 400ms = DOKŁADNIE połowa animacji z 0.8s (karta w tej chwili jest odwrócona przodem - znakiem zapytania - tył z portretem jest pod kątem 180st. do widza, więc 100% niewidoczny)
+            // Cicha podmiana po 400ms (kiedy moneta jest obrócona bokiem)
             setTimeout(() => {
                 const cardBack = document.getElementById(cardBackId);
                 const champImgUrl = `https://ddragon.leagueoflegends.com/cdn/${latestPatch}/img/champion/${newChampion.image.full}`;
                 
-                // Cicha podmiana danych DOM, gdy tył jest schowany za znakiem zapytania
                 cardBack.innerHTML = `
                     <img src="${champImgUrl}" class="champ-portrait" alt="Ikona postaci" loading="lazy">
                     <span>${newChampion.name}</span>
                 `;
             }, 400);
 
-            // Zabezpieczenie usuwające klasę po ukończeniu (800ms) by uniknąć glitchy w DOM
-            setTimeout(() => {
+            // Czyszczenie poprzedniego timeoutu i zabezpieczenie usunięcia klasy
+            if (flipper.dataset.animTimeout) {
+                clearTimeout(flipper.dataset.animTimeout);
+            }
+            flipper.dataset.animTimeout = setTimeout(() => {
                 flipper.classList.remove('coin-flip-anim');
             }, 800);
         }
