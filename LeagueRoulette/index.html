@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-width=1.0">
+    <title>Custom Roulette 67</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="app" class="step-container">
+
+    <!-- ================= KROK 1: WPISYWANIE GRACZY ================= -->
+    <div class="step" id="step1">
+        <div class="panel">
+            <h1>Custom Roulette 67</h1>
+            <p class="subtitle" id="step1-subtitle">Wprowadź 10 graczy, aby wylosować zbalansowaną grę.</p>
+
+            <div class="mode-toggle-row">
+                <label class="switch-container">
+                    <input type="checkbox" id="custom-teams-toggle" onchange="toggleCustomTeams()">
+                    <span class="switch-slider"></span>
+                    <span class="switch-label">Własne Składy</span>
+                </label>
+                <label class="switch-container">
+                    <input type="checkbox" id="mode4-toggle" onchange="toggleMode4()">
+                    <span class="switch-slider"></span>
+                    <span class="switch-label">Tryb 4 Drużyn</span>
+                </label>
+            </div>
+
+            <div class="team-names-row" id="team-names-row">
+                <div class="player-input" style="border-color: var(--blue-team);">
+                    <input type="text" id="team1-name" placeholder="Nazwa Team 1" autocomplete="off" style="text-align:center;" />
+                </div>
+                <div class="player-input" style="border-color: var(--red-team);">
+                    <input type="text" id="team2-name" placeholder="Nazwa Team 2" autocomplete="off" style="text-align:center;" />
+                </div>
+                <div class="player-input" id="team3-name-wrap" style="border-color: var(--green-team); display:none;">
+                    <input type="text" id="team3-name" placeholder="Nazwa Team 3" autocomplete="off" style="text-align:center;" />
+                </div>
+                <div class="player-input" id="team4-name-wrap" style="border-color: var(--purple-team); display:none;">
+                    <input type="text" id="team4-name" placeholder="Nazwa Team 4" autocomplete="off" style="text-align:center;" />
+                </div>
+            </div>
+
+            <div class="inputs-grid" id="inputs-container"></div>
+
+            <button id="btn-step1" class="gold-btn">Wylosuj składy</button>
+        </div>
+    </div>
+
+    <!-- ================= KROK 2: ODKRYWANIE RÓL ================= -->
+    <div class="step" id="step2">
+        <h1>Losowanie Ról</h1>
+        <p class="subtitle">Kliknij w karty ze znakiem zapytania, aby odkryć przypisane linie.</p>
+        <div class="teams-wrapper" id="roles-teams-wrapper"></div>
+        <button id="btn-step2" class="gold-btn" style="margin-top: 40px;">Dalej: Losuj Championów ➔</button>
+    </div>
+
+    <!-- ================= KROK 3: ODKRYWANIE POSTACI ================= -->
+    <div class="step" id="step3">
+        <h1>Losowanie Postaci</h1>
+        <p class="subtitle">Bohaterowie przydzieleni! Klikaj po kolei karty, aby budować napięcie!</p>
+        <div class="teams-wrapper" id="champs-teams-wrapper"></div>
+
+        <div id="battle-2team-section" style="text-align:center; margin-top: 30px;">
+            <button id="btn-battle" class="gold-btn" onclick="startBattle()">Kto wygra?</button>
+            <div id="battle-container" style="display: none; width: 100%; max-width: 800px; margin-top: 30px;">
+                <div class="battle-bar"><div id="battle-fill" class="battle-fill"></div></div>
+                <h2 id="winner-text" style="margin-top: 20px; color: var(--gold); opacity: 0; transition: opacity 0.5s;"></h2>
+            </div>
+        </div>
+
+        <div id="battle-4team-section" style="display:none; text-align:center; margin-top: 30px;">
+            <button class="gold-btn" onclick="slideToStep(3)">Przejdź do Drabinki Turniejowej ➔</button>
+        </div>
+
+        <button class="gold-btn" style="margin-top: 20px;" onclick="playAutumnTransition(() => location.reload())">Zagraj ponownie</button>
+    </div>
+
+    <!-- ================= KROK 4: DRABINKA TURNIEJOWA (tylko tryb 4 drużyn) ================= -->
+    <div class="step" id="step4">
+        <h1>Drabinka Turniejowa</h1>
+        <p class="subtitle">Półfinały → Finał. Kliknij nazwę drużyny, aby ją awansować.</p>
+
+        <div class="bracket-wrapper">
+            <!-- Półfinały -->
+            <div class="bracket-round">
+                <div class="bracket-round-title">Półfinały</div>
+
+                <!-- Mecz 1: Team1 vs Team2 -->
+                <div class="bracket-match" id="sf1-match">
+                    <div class="bracket-team-slot bracket-clickable" id="sf1-team1" onclick="pickWinner('sf1', 0)">
+                        <span class="bracket-team-dot" style="background:var(--blue-team)"></span>
+                        <span id="sf1-t1-name">Team 1</span>
+                    </div>
+                    <div class="bracket-vs">VS</div>
+                    <div class="bracket-team-slot bracket-clickable" id="sf1-team2" onclick="pickWinner('sf1', 1)">
+                        <span class="bracket-team-dot" style="background:var(--red-team)"></span>
+                        <span id="sf1-t2-name">Team 2</span>
+                    </div>
+                </div>
+
+                <!-- Mecz 2: Team3 vs Team4 -->
+                <div class="bracket-match" id="sf2-match" style="margin-top:20px;">
+                    <div class="bracket-team-slot bracket-clickable" id="sf2-team1" onclick="pickWinner('sf2', 0)">
+                        <span class="bracket-team-dot" style="background:var(--green-team)"></span>
+                        <span id="sf2-t1-name">Team 3</span>
+                    </div>
+                    <div class="bracket-vs">VS</div>
+                    <div class="bracket-team-slot bracket-clickable" id="sf2-team2" onclick="pickWinner('sf2', 1)">
+                        <span class="bracket-team-dot" style="background:var(--purple-team)"></span>
+                        <span id="sf2-t2-name">Team 4</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Strzałka -->
+            <div class="bracket-connector">➜</div>
+
+            <!-- Finał -->
+            <div class="bracket-round">
+                <div class="bracket-round-title">Finał</div>
+                <div class="bracket-match" id="final-match">
+                    <div class="bracket-team-slot tbd" id="final-team1">
+                        <span class="bracket-team-dot" style="background:#444"></span>
+                        <span id="final-t1-name">Zwycięzca PF1</span>
+                    </div>
+                    <div class="bracket-vs">VS</div>
+                    <div class="bracket-team-slot tbd" id="final-team2">
+                        <span class="bracket-team-dot" style="background:#444"></span>
+                        <span id="final-t2-name">Zwycięzca PF2</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Strzałka -->
+            <div class="bracket-connector">➜</div>
+
+            <!-- Mistrz -->
+            <div class="bracket-round">
+                <div class="bracket-round-title">🏆 Mistrz</div>
+                <div class="bracket-match" id="champion-slot" style="min-width:180px; text-align:center;">
+                    <div class="bracket-team-slot tbd" id="champion-display" style="justify-content:center; font-size:18px; padding: 20px;">
+                        <span id="champion-name">???</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button class="gold-btn" style="margin-top: 40px;" onclick="playAutumnTransition(() => location.reload())">Zagraj ponownie</button>
+    </div>
+
+</div>
+
+<div class="footer">By Kajuszkaa | SwyBee47 | Claude</div>
+
+<script src="script.js"></script>
+</body>
+</html>
