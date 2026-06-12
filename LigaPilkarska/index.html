@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Liga Piłkarska – HodowlaRP</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #0a160a;
+    --bg2:       #111e11;
+    --bg3:       #162916;
+    --border:    #2a5a2a;
+    --border2:   #1e3a1e;
+    --green:     #3a7a3a;
+    --green-lt:  #7db87d;
+    --gold:      #f0c040;
+    --gold-dk:   #b88e20;
+    --white:     #e8f4e8;
+    --muted:     #c8e6c8;
+    --red-zone:  #7a1a1a;
+    --font-px:   'Press Start 2P', monospace;
+    --font-body: 'Inter', sans-serif;
+  }
+
+  html, body { height: 100%; }
+  body {
+    font-family: var(--font-body);
+    background: var(--bg);
+    color: var(--white);
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  .site-header {
+    background: var(--bg2);
+    border-bottom: 3px solid var(--green);
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo-img {
+    width: 52px; height: 52px;
+    border-radius: 6px;
+    border: 2px solid var(--green);
+    image-rendering: pixelated;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+  .logo-img img { width: 100%; height: 100%; object-fit: cover; display: block; image-rendering: pixelated; }
+  .header-text {}
+  .header-sub { font-family: var(--font-px); font-size: 7px; color: var(--green-lt); letter-spacing: 1px; margin-bottom: 5px; }
+  .header-title { font-family: var(--font-px); font-size: 12px; color: var(--gold); line-height: 1.5; }
+
+  /* ── NAV ── */
+  .site-nav {
+    background: var(--bg2);
+    border-bottom: 2px solid var(--border);
+    display: flex;
+    padding: 0 1.5rem;
+    gap: 4px;
+  }
+  .nav-btn {
+    font-family: var(--font-px);
+    font-size: 7px;
+    color: var(--green-lt);
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    padding: 0.8rem 1rem;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: color .2s;
+  }
+  .nav-btn:hover { color: var(--white); }
+  .nav-btn.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+  /* ── MAIN ── */
+  .main { padding: 1.5rem; max-width: 1100px; margin: 0 auto; }
+
+  /* ── STATS CARDS ── */
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 1.5rem; }
+  @media (max-width: 600px) { .stats-row { grid-template-columns: repeat(2, 1fr); } }
+  .stat-card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 10px;
+    text-align: center;
+  }
+  .stat-label { font-family: var(--font-px); font-size: 5px; color: var(--green-lt); margin-bottom: 8px; letter-spacing: .5px; }
+  .stat-value { font-family: var(--font-px); font-size: 18px; color: var(--gold); }
+
+  /* ── SECTION TITLE ── */
+  .section-title {
+    font-family: var(--font-px);
+    font-size: 8px;
+    color: var(--gold);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  /* ── LEGEND ── */
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 10px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-family: var(--font-px); font-size: 5px; color: var(--green-lt); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 2px; }
+
+  /* ── TABLE ── */
+  .table-wrap { background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; overflow-x: auto; margin-bottom: 1.5rem; }
+  .liga-table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 600px; }
+  .liga-table th {
+    font-family: var(--font-px);
+    font-size: 6px;
+    color: var(--green-lt);
+    background: var(--bg);
+    padding: 10px 10px;
+    text-align: left;
+    white-space: nowrap;
+    letter-spacing: .4px;
+  }
+  .liga-table th:not(:nth-child(2)) { text-align: center; }
+  .liga-table td { padding: 8px 10px; color: var(--muted); border-bottom: 1px solid var(--border2); vertical-align: middle; }
+  .liga-table td:not(:nth-child(2)) { text-align: center; }
+  .liga-table tbody tr:last-child td { border-bottom: none; }
+  .liga-table tbody tr:hover td { background: var(--border2); }
+
+  .zone-champ td:first-child { border-left: 3px solid var(--gold); }
+  .zone-playoff td:first-child { border-left: 3px solid var(--green-lt); }
+  .zone-rel td:first-child { border-left: 3px solid var(--red-zone); }
+
+  .pos-num { font-family: var(--font-px); font-size: 8px; color: var(--green-lt); }
+  .pos-gold   { color: var(--gold); }
+  .pos-silver { color: #b0b8b0; }
+  .pos-bronze { color: #cd7f32; }
+
+  .team-cell { display: flex; align-items: center; gap: 8px; }
+  .team-icon {
+    width: 24px; height: 24px;
+    border-radius: 4px;
+    font-family: var(--font-px);
+    font-size: 5px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .team-name { font-weight: 600; color: var(--white); font-size: 12px; }
+  .pts-cell { font-family: var(--font-px); font-size: 9px; color: var(--gold); }
+
+  /* ── TABS CONTENT ── */
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* ── MECZE ── */
+  .mecze-grid { display: flex; flex-direction: column; gap: 8px; }
+  .kolejka-label {
+    font-family: var(--font-px);
+    font-size: 6px;
+    color: var(--green-lt);
+    margin: 1rem 0 6px;
+    letter-spacing: 1px;
+  }
+  .mecz-card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .mecz-team { flex: 1; font-weight: 600; font-size: 13px; color: var(--white); }
+  .mecz-team.right { text-align: right; }
+  .mecz-score {
+    font-family: var(--font-px);
+    font-size: 10px;
+    color: var(--gold);
+    background: var(--bg);
+    border: 1px solid var(--green);
+    border-radius: 6px;
+    padding: 6px 16px;
+    white-space: nowrap;
+    min-width: 80px;
+    text-align: center;
+  }
+  .mecz-score.played { color: var(--white); }
+  .mecz-date { font-family: var(--font-px); font-size: 5px; color: var(--green-lt); white-space: nowrap; }
+
+  /* ── STATYSTYKI ── */
+  .stats-section { margin-bottom: 2rem; }
+  .stats-table-wrap { background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; overflow-x: auto; }
+  .stats-table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 400px; }
+  .stats-table th { font-family: var(--font-px); font-size: 6px; color: var(--green-lt); background: var(--bg); padding: 10px; text-align: left; }
+  .stats-table th:not(:nth-child(2)) { text-align: center; }
+  .stats-table td { padding: 8px 10px; color: var(--muted); border-bottom: 1px solid var(--border2); vertical-align: middle; }
+  .stats-table td:not(:nth-child(2)) { text-align: center; }
+  .stats-table tbody tr:last-child td { border-bottom: none; }
+  .stats-table tbody tr:hover td { background: var(--border2); }
+  .rank-num { font-family: var(--font-px); font-size: 8px; color: var(--green-lt); }
+  .highlight { font-family: var(--font-px); font-size: 9px; color: var(--gold); }
+
+  /* ── ADMIN PANEL ── */
+  .admin-section { background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem; margin-bottom: 1.5rem; }
+  .admin-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; align-items: flex-end; }
+  .admin-field { display: flex; flex-direction: column; gap: 4px; }
+  .admin-field label { font-family: var(--font-px); font-size: 5px; color: var(--green-lt); letter-spacing: .5px; }
+  .admin-field select, .admin-field input {
+    font-family: var(--font-body);
+    font-size: 13px;
+    background: var(--bg);
+    color: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 7px 10px;
+    min-width: 120px;
+  }
+  .admin-field input[type=number] { min-width: 60px; max-width: 80px; }
+  .btn {
+    font-family: var(--font-px);
+    font-size: 7px;
+    color: var(--bg);
+    background: var(--gold);
+    border: none;
+    border-radius: 6px;
+    padding: 9px 14px;
+    cursor: pointer;
+    letter-spacing: .5px;
+    transition: background .15s;
+  }
+  .btn:hover { background: #d4a830; }
+  .btn-red { background: #7a2a2a; color: var(--white); }
+  .btn-red:hover { background: #9a3a3a; }
+
+  .msg { font-family: var(--font-px); font-size: 6px; color: #7af07a; margin-top: 8px; min-height: 14px; }
+
+  /* ── FOOTER ── */
+  .site-footer {
+    background: var(--bg);
+    border-top: 2px solid var(--border);
+    padding: 12px 1.5rem;
+    font-family: var(--font-px);
+    font-size: 6px;
+    color: var(--green);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="logo-img">
+    <img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCAEAAQADASIAAhEBAxEB/8QAGAABAAMBAAAAAAAAAAAAAAAAAAYICQf/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAGgEBAAMBAQEAAAAAAAAAAAAAAAEDBQYCBP/EABQRAQAAAAAAAAAAAAAAAAAAAAD/2gAMAwEAAhEDEQA/ALAAMJ0QAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADn4AAAAAAAOgAAAAAAAA5+AAAAAAADoAAAAAAAAOfgAAAAAAA6AAAAAAAADn4AAAAAAAOgAAAAAAAA6WA3XOgAMzwGC3QAF5QErQAAAAAFGgEKgAGmADeYQADmgDCdEAAAAAA6WA3XOgAMzwGC3QAF5QErQAAAAAFGgEKgAGmADeYQADmgDCdEAAAAAAloDdc6AAyvAY7dAAaRgKloAAAAADNwBaqAAaoANhhAAIkAwnRAAAAAAJaA3XOgAMrwGO3QAGkYCpaAAAAAAzcAWqgAGqADYYQACJAMJ0QAAAAAAAAAAAAADPoBCoAAAAABoKAlaAAAAAAAAAAAAAAAAAAAAAAz6AQqAAAAAAaCgJWgAAAAAAAAAAAAAKNAIVAAI+AAAC/QD2+4AAAAABQUB4fCAAkAAAALygJWgAAAAAKNAIVAAI+AAAC/QD2+4AAAAABQUB4fCAAkAAAALygJWgAAAAAI+AAAAAAACQAAAAAAAAj4AAAAAAAJAAAAAAAACPgAAAAAAAkAAAAAAAAI+AAAAAAACQAAAA//Z" alt="Hodox" />
+  </div>
+  <div class="header-text">
+    <div class="header-sub">HodowlaRP</div>
+    <div class="header-title">Liga Piłkarska<br>w Minecrafcie</div>
+  </div>
+</header>
+
+<nav class="site-nav">
+  <button class="nav-btn active" onclick="switchTab('tabela', this)">⚽ Tabela</button>
+  <button class="nav-btn" onclick="switchTab('mecze', this)">📅 Mecze</button>
+  <button class="nav-btn" onclick="switchTab('statystyki', this)">📊 Statystyki</button>
+  <button class="nav-btn" onclick="switchTab('admin', this)">⚙ Admin</button>
+</nav>
+
+<main class="main">
+
+  <!-- ── TABELA ── -->
+  <section id="tab-tabela" class="tab-content active">
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-label">Drużyny</div><div class="stat-value" id="s-teams">16</div></div>
+      <div class="stat-card"><div class="stat-label">Kolejka</div><div class="stat-value" id="s-kolejka">1</div></div>
+      <div class="stat-card"><div class="stat-label">Rozegrane mecze</div><div class="stat-value" id="s-mecze">0</div></div>
+      <div class="stat-card"><div class="stat-label">Strzelone gole</div><div class="stat-value" id="s-gole">0</div></div>
+    </div>
+
+    <div class="section-title">Tabela Ligowa — Sezon 1</div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#f0c040"></div>Mistrz ligi</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#7db87d"></div>Strefa play-off (2–4)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#7a1a1a"></div>Strefa spadkowa (14–16)</div>
+    </div>
+    <div class="table-wrap">
+      <table class="liga-table">
+        <thead>
+          <tr>
+            <th style="text-align:center">#</th>
+            <th>Drużyna</th>
+            <th title="Mecze">M</th>
+            <th title="Wygrane">W</th>
+            <th title="Remisy">R</th>
+            <th title="Porażki">P</th>
+            <th title="Gole zdobyte">G+</th>
+            <th title="Gole stracone">G-</th>
+            <th title="Różnica bramek">+/-</th>
+            <th title="Punkty">Pkt</th>
+          </tr>
+        </thead>
+        <tbody id="tabela-body"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ── MECZE ── -->
+  <section id="tab-mecze" class="tab-content">
+    <div class="section-title">Terminarz & Wyniki</div>
+    <div class="mecze-grid" id="mecze-list"></div>
+  </section>
+
+  <!-- ── STATYSTYKI ── -->
+  <section id="tab-statystyki" class="tab-content">
+    <div class="section-title">Statystyki Drużyn</div>
+    <div class="stats-section">
+      <div class="stats-table-wrap">
+        <table class="stats-table">
+          <thead>
+            <tr>
+              <th style="text-align:center">#</th>
+              <th>Drużyna</th>
+              <th title="Mecze">M</th>
+              <th title="Gole zdobyte">G+</th>
+              <th title="Gole stracone">G-</th>
+              <th title="Średnia goli na mecz">Śr. G/M</th>
+              <th title="Wygrane">W</th>
+              <th title="Seria">Seria</th>
+            </tr>
+          </thead>
+          <tbody id="stats-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── ADMIN ── -->
+  <section id="tab-admin" class="tab-content">
+    <div class="section-title">Panel Administratora</div>
+
+    <!-- LOGIN -->
+    <div id="admin-login" class="admin-section">
+      <div class="section-title" style="font-size:6px;color:var(--green-lt);">Wprowadź hasło</div>
+      <div class="admin-row">
+        <div class="admin-field">
+          <label>Hasło</label>
+          <input type="password" id="admin-pass" placeholder="••••••" onkeydown="if(event.key==='Enter')checkPass()" />
+        </div>
+        <button class="btn" onclick="checkPass()">Zaloguj</button>
+      </div>
+      <div class="msg" id="login-msg"></div>
+    </div>
+
+    <!-- PANEL (ukryty domyślnie) -->
+    <div id="admin-panel" style="display:none">
+      <div style="display:flex;justify-content:flex-end;margin-bottom:1rem;">
+        <button class="btn btn-red" onclick="logoutAdmin()" style="font-size:6px;padding:6px 10px;">🔒 Wyloguj</button>
+      </div>
+
+    <div class="admin-section">
+      <div class="section-title" style="font-size:6px;color:var(--green-lt);">Dodaj Wynik Meczu</div>
+      <div class="admin-row">
+        <div class="admin-field">
+          <label>Drużyna Gospodarz</label>
+          <select id="a-home"></select>
+        </div>
+        <div class="admin-field">
+          <label>Gole Gospod.</label>
+          <input type="number" id="a-hgoal" min="0" value="0" />
+        </div>
+        <div class="admin-field">
+          <label>Gole Gości</label>
+          <input type="number" id="a-agoal" min="0" value="0" />
+        </div>
+        <div class="admin-field">
+          <label>Drużyna Gość</label>
+          <select id="a-away"></select>
+        </div>
+        <div class="admin-field">
+          <label>Kolejka</label>
+          <input type="number" id="a-kolejka" min="1" value="1" />
+        </div>
+        <button class="btn" onclick="addResult()">Zapisz wynik</button>
+      </div>
+      <div class="msg" id="admin-msg"></div>
+    </div>
+
+    <div class="admin-section">
+      <div class="section-title" style="font-size:6px;color:var(--green-lt);">Zmień Nazwy Drużyn</div>
+      <div id="team-names-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:10px;"></div>
+      <button class="btn" onclick="saveTeamNames()">Zapisz nazwy</button>
+      <div class="msg" id="names-msg"></div>
+    </div>
+
+    <div class="admin-section">
+      <div class="section-title" style="font-size:6px;color:var(--red-zone);">Resetuj Sezon</div>
+      <button class="btn btn-red" onclick="resetSeason()">⚠ Resetuj wszystkie dane</button>
+    </div>
+
+    </div><!-- /admin-panel -->
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <span>HodowlaRP © 2025</span>
+  <span>Sezon 1 — Minecraft Football League</span>
+  <span id="footer-date"></span>
+  <span style="color:var(--green-lt);">By SwyBee47</span>
+</footer>
+
+<script>
+/* ══════════════════════════════════════════
+   DATA
+══════════════════════════════════════════ */
+const TEAM_COLORS = [
+  {bg:"#1a3a7a",fg:"#7ab4f0"}, {bg:"#7a1a1a",fg:"#f07a7a"},
+  {bg:"#4a3a1a",fg:"#f0c040"}, {bg:"#1a3a3a",fg:"#7af0d4"},
+  {bg:"#3a1a7a",fg:"#c07af0"}, {bg:"#1a5a1a",fg:"#7af07a"},
+  {bg:"#5a1a3a",fg:"#f07ab4"}, {bg:"#2a2a5a",fg:"#9090f0"},
+  {bg:"#5a3a1a",fg:"#f0b47a"}, {bg:"#1a4a4a",fg:"#7ae0e0"},
+  {bg:"#4a1a1a",fg:"#e07a7a"}, {bg:"#1a1a4a",fg:"#7a7ae0"},
+  {bg:"#3a4a1a",fg:"#c0d47a"}, {bg:"#4a1a4a",fg:"#d47ad4"},
+  {bg:"#1a4a2a",fg:"#7ad4a4"}, {bg:"#4a4a1a",fg:"#d4d47a"},
+];
+
+function defaultTeams() {
+  return Array.from({length:16}, (_,i) => ({
+    name: `Drużyna ${i+1}`,
+    skrot: i < 9 ? `DR${i+1}` : `D${i+1}`,
+  }));
+}
+
+function loadData() {
+  try {
+    const d = localStorage.getItem('hodowlarp_liga');
+    return d ? JSON.parse(d) : null;
+  } catch(e) { return null; }
+}
+
+function saveData() {
+  localStorage.setItem('hodowlarp_liga', JSON.stringify(state));
+}
+
+let state = loadData() || {
+  teams: defaultTeams(),
+  results: [],   // [{home, away, hg, ag, kolejka}]
+};
+
+/* ══════════════════════════════════════════
+   OBLICZENIA TABELI
+══════════════════════════════════════════ */
+function calcTable() {
+  const rows = state.teams.map((t,i) => ({
+    idx: i, name: t.name, skrot: t.skrot,
+    m:0, w:0, r:0, p:0, gp:0, gs:0,
+    seria: [],
+  }));
+
+  for (const res of state.results) {
+    const h = rows[res.home], a = rows[res.away];
+    if (!h || !a) continue;
+    h.m++; a.m++;
+    h.gp += res.hg; h.gs += res.ag;
+    a.gp += res.ag; a.gs += res.hg;
+    if (res.hg > res.ag)      { h.w++; a.p++; h.seria.push('w'); a.seria.push('l'); }
+    else if (res.hg < res.ag) { a.w++; h.p++; a.seria.push('w'); h.seria.push('l'); }
+    else                       { h.r++; a.r++; h.seria.push('d'); a.seria.push('d'); }
+  }
+
+  rows.forEach(r => r.pkt = r.w * 3 + r.r);
+
+  rows.sort((a,b) => {
+    if (b.pkt !== a.pkt) return b.pkt - a.pkt;
+    const gdA = a.gp - a.gs, gdB = b.gp - b.gs;
+    if (gdB !== gdA) return gdB - gdA;
+    return b.gp - a.gp;
+  });
+
+  return rows;
+}
+
+/* ══════════════════════════════════════════
+   RENDER TABELA
+══════════════════════════════════════════ */
+function posClass(i) {
+  if (i===0) return 'pos-gold';
+  if (i===1) return 'pos-silver';
+  if (i===2) return 'pos-bronze';
+  return '';
+}
+function zoneClass(i,n) {
+  if (i===0) return 'zone-champ';
+  if (i<4)   return 'zone-playoff';
+  if (i>=n-3) return 'zone-rel';
+  return '';
+}
+
+function renderSeria(seria) {
+  const last5 = seria.slice(-5);
+  return last5.map(s => {
+    const col = s==='w' ? '#3a7a3a' : s==='d' ? '#666' : '#7a1a1a';
+    const lbl = s==='w' ? 'W' : s==='d' ? 'R' : 'P';
+    return `<span style="display:inline-block;width:14px;height:14px;background:${col};border-radius:2px;font-family:var(--font-px);font-size:5px;line-height:14px;text-align:center;color:#fff;margin:1px;">${lbl}</span>`;
+  }).join('');
+}
+
+function renderTabela() {
+  const rows = calcTable();
+  const tbody = document.getElementById('tabela-body');
+  tbody.innerHTML = '';
+  rows.forEach((r,i) => {
+    const c = TEAM_COLORS[r.idx];
+    const gd = r.gp - r.gs;
+    const tr = document.createElement('tr');
+    tr.className = zoneClass(i, rows.length);
+    tr.innerHTML = `
+      <td><span class="pos-num ${posClass(i)}">${i+1}</span></td>
+      <td><div class="team-cell">
+        <div class="team-icon" style="background:${c.bg};color:${c.fg};">${r.skrot}</div>
+        <span class="team-name">${r.name}</span>
+      </div></td>
+      <td>${r.m}</td>
+      <td>${r.w}</td>
+      <td>${r.r}</td>
+      <td>${r.p}</td>
+      <td>${r.gp}</td>
+      <td>${r.gs}</td>
+      <td style="color:${gd>0?'#7af07a':gd<0?'#f07a7a':'var(--muted)'}">${gd>0?'+':''}${gd}</td>
+      <td class="pts-cell">${r.pkt}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  // stats cards
+  const played = state.results.length;
+  const totalGoals = state.results.reduce((s,r) => s + r.hg + r.ag, 0);
+  const maxKolejka = state.results.length ? Math.max(...state.results.map(r=>r.kolejka)) : 1;
+  document.getElementById('s-mecze').textContent = played;
+  document.getElementById('s-gole').textContent = totalGoals;
+  document.getElementById('s-kolejka').textContent = maxKolejka;
+}
+
+/* ══════════════════════════════════════════
+   RENDER MECZE
+══════════════════════════════════════════ */
+function renderMecze() {
+  const container = document.getElementById('mecze-list');
+  container.innerHTML = '';
+
+  const byKolejka = {};
+  state.results.forEach(r => {
+    if (!byKolejka[r.kolejka]) byKolejka[r.kolejka] = [];
+    byKolejka[r.kolejka].push(r);
+  });
+
+  const maxK = 15; // max kolejek do wyświetlenia
+  for (let k = 1; k <= maxK; k++) {
+    const label = document.createElement('div');
+    label.className = 'kolejka-label';
+    label.textContent = `── Kolejka ${k}`;
+    container.appendChild(label);
+
+    const mecze = byKolejka[k] || [];
+    if (mecze.length === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'mecz-card';
+      empty.innerHTML = `<span style="font-family:var(--font-px);font-size:6px;color:var(--green-lt);">Brak wyników</span>`;
+      container.appendChild(empty);
+    } else {
+      mecze.forEach(m => {
+        const hn = state.teams[m.home]?.name || '?';
+        const an = state.teams[m.away]?.name || '?';
+        const card = document.createElement('div');
+        card.className = 'mecz-card';
+        card.innerHTML = `
+          <span class="mecz-team">${hn}</span>
+          <span class="mecz-score played">${m.hg} — ${m.ag}</span>
+          <span class="mecz-team right">${an}</span>
+        `;
+        container.appendChild(card);
+      });
+    }
+  }
+}
+
+/* ══════════════════════════════════════════
+   RENDER STATYSTYKI
+══════════════════════════════════════════ */
+function renderStats() {
+  const rows = calcTable();
+  const tbody = document.getElementById('stats-body');
+  tbody.innerHTML = '';
+
+  const sorted = [...rows].sort((a,b) => b.gp - a.gp);
+  sorted.forEach((r,i) => {
+    const avg = r.m > 0 ? (r.gp / r.m).toFixed(1) : '0.0';
+    const last = r.seria.slice(-1)[0];
+    const seriaStr = renderSeria(r.seria);
+    const c = TEAM_COLORS[r.idx];
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><span class="rank-num">${i+1}</span></td>
+      <td><div class="team-cell">
+        <div class="team-icon" style="background:${c.bg};color:${c.fg};">${r.skrot}</div>
+        <span class="team-name">${r.name}</span>
+      </div></td>
+      <td>${r.m}</td>
+      <td class="highlight">${r.gp}</td>
+      <td>${r.gs}</td>
+      <td>${avg}</td>
+      <td>${r.w}</td>
+      <td>${seriaStr || '<span style="font-family:var(--font-px);font-size:5px;color:var(--green-lt);">—</span>'}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+/* ══════════════════════════════════════════
+   ADMIN
+══════════════════════════════════════════ */
+/* ══════════════════════════════════════════
+   ADMIN AUTH
+══════════════════════════════════════════ */
+const ADMIN_PASS = 'Mis23';
+
+function checkPass() {
+  const inp = document.getElementById('admin-pass');
+  const msg = document.getElementById('login-msg');
+  if (inp.value === ADMIN_PASS) {
+    document.getElementById('admin-login').style.display = 'none';
+    document.getElementById('admin-panel').style.display = 'block';
+    sessionStorage.setItem('admin_ok', '1');
+    msg.textContent = '';
+  } else {
+    msg.style.color = '#f07a7a';
+    msg.textContent = '✗ Złe hasło!';
+    inp.value = '';
+  }
+}
+
+function logoutAdmin() {
+  sessionStorage.removeItem('admin_ok');
+  document.getElementById('admin-login').style.display = 'block';
+  document.getElementById('admin-panel').style.display = 'none';
+  document.getElementById('admin-pass').value = '';
+}
+
+function populateAdminSelects() {
+  ['a-home','a-away'].forEach(id => {
+    const sel = document.getElementById(id);
+    sel.innerHTML = state.teams.map((t,i) => `<option value="${i}">${t.name}</option>`).join('');
+  });
+  document.getElementById('a-away').selectedIndex = 1;
+}
+
+function populateTeamNames() {
+  const grid = document.getElementById('team-names-grid');
+  grid.innerHTML = state.teams.map((t,i) => `
+    <div class="admin-field">
+      <label>Drużyna ${i+1}</label>
+      <input type="text" id="tn-${i}" value="${t.name}" placeholder="Drużyna ${i+1}" />
+    </div>
+  `).join('');
+}
+
+function saveTeamNames() {
+  state.teams = state.teams.map((t,i) => {
+    const inp = document.getElementById(`tn-${i}`);
+    const name = inp ? inp.value.trim() || t.name : t.name;
+    const skrot = name.length <= 3 ? name.toUpperCase() : name.slice(0,3).toUpperCase();
+    return { name, skrot };
+  });
+  saveData();
+  renderAll();
+  populateAdminSelects();
+  document.getElementById('names-msg').textContent = '✓ Nazwy zapisane!';
+  setTimeout(() => document.getElementById('names-msg').textContent = '', 2000);
+}
+
+function addResult() {
+  const home  = parseInt(document.getElementById('a-home').value);
+  const away  = parseInt(document.getElementById('a-away').value);
+  const hg    = parseInt(document.getElementById('a-hgoal').value) || 0;
+  const ag    = parseInt(document.getElementById('a-agoal').value) || 0;
+  const kolejka = parseInt(document.getElementById('a-kolejka').value) || 1;
+  const msg   = document.getElementById('admin-msg');
+
+  if (home === away) { msg.textContent = '✗ Wybierz dwie różne drużyny!'; return; }
+
+  state.results.push({ home, away, hg, ag, kolejka });
+  saveData();
+  renderAll();
+
+  const hn = state.teams[home].name, an = state.teams[away].name;
+  msg.textContent = `✓ Zapisano: ${hn} ${hg}–${ag} ${an}`;
+  setTimeout(() => msg.textContent = '', 3000);
+}
+
+function resetSeason() {
+  if (!confirm('Na pewno chcesz zresetować wszystkie wyniki? Nazwy drużyn zostaną zachowane.')) return;
+  state.results = [];
+  saveData();
+  renderAll();
+}
+
+/* ══════════════════════════════════════════
+   NAV
+══════════════════════════════════════════ */
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+
+/* ══════════════════════════════════════════
+   INIT
+══════════════════════════════════════════ */
+function renderAll() {
+  renderTabela();
+  renderMecze();
+  renderStats();
+}
+
+document.getElementById('footer-date').textContent = new Date().toLocaleDateString('pl-PL');
+
+populateAdminSelects();
+populateTeamNames();
+renderAll();
+
+// przywróć sesję admina jeśli już zalogowany
+if (sessionStorage.getItem('admin_ok') === '1') {
+  document.getElementById('admin-login').style.display = 'none';
+  document.getElementById('admin-panel').style.display = 'block';
+}
+</script>
+</body>
+</html>
