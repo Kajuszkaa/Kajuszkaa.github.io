@@ -2,88 +2,133 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-width=1.0">
-    <title>Custom Roulette 67</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Roulette 67 - League of Legends</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Permanent+Marker&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="theme-normal">
 
 <div id="app" class="step-container">
 
-    <!-- ================= KROK 1: WPISYWANIE GRACZY ================= -->
+    <!-- ================= KROK 1: SKŁADY I TRYB GRY ================= -->
     <div class="step" id="step1">
-        <div class="panel">
-            <h1>Custom Roulette 67</h1>
-            <p class="subtitle" id="step1-subtitle">Wprowadź 10 graczy, aby wylosować zbalansowaną grę.</p>
-
-            <div class="mode-toggle-row">
-                <label class="switch-container">
-                    <input type="checkbox" id="custom-teams-toggle" onchange="toggleCustomTeams()">
-                    <span class="switch-slider"></span>
-                    <span class="switch-label">Własne Składy</span>
-                </label>
-                <label class="switch-container">
-                    <input type="checkbox" id="mode4-toggle" onchange="toggleMode4()">
-                    <span class="switch-slider"></span>
-                    <span class="switch-label">Tryb 4 Drużyn</span>
-                </label>
+        <div class="panel step1-panel">
+            <div class="header-container">
+                <div class="title-row">
+                    <h1 id="main-title">Custom Roulette 67</h1>
+                    <span id="chaos-badge" class="chaos-pill" style="display: none;">⚡ DLA POJEBÓW ⚡</span>
+                </div>
+                <p class="subtitle" id="step1-subtitle">Skonfiguruj składy, wybierz tryb gry i wylosuj pojedynek!</p>
             </div>
 
-            <div class="team-names-row" id="team-names-row">
-                <div class="player-input" style="border-color: var(--blue-team);">
-                    <input type="text" id="team1-name" placeholder="Nazwa Team 1" autocomplete="off" style="text-align:center;" />
+            <!-- WYBÓR TRYBU GRY I ZMIANA MOTYWU -->
+            <div class="mode-selector-wrapper">
+                <div class="mode-card active" id="mode-normal-card" onclick="setGameMode('normal')">
+                    <div class="mode-card-icon">🛡️</div>
+                    <div class="mode-card-info">
+                        <div class="mode-card-title">Tryb Normalny</div>
+                        <div class="mode-card-subtitle">Klasyczny & Zbalansowany</div>
+                    </div>
+                    <div class="mode-badge">STANDARD</div>
+                    <div class="mode-tooltip">
+                        <strong>Standardowy podział ról</strong><br>
+                        Postacie idą na swoje linie (Mid na mida, ADC na bota, Support wspiera itd.). Klasyczna i zbalansowana rozgrywka!
+                    </div>
                 </div>
-                <div class="player-input" style="border-color: var(--red-team);">
-                    <input type="text" id="team2-name" placeholder="Nazwa Team 2" autocomplete="off" style="text-align:center;" />
-                </div>
-                <div class="player-input" id="team3-name-wrap" style="border-color: var(--green-team); display:none;">
-                    <input type="text" id="team3-name" placeholder="Nazwa Team 3" autocomplete="off" style="text-align:center;" />
-                </div>
-                <div class="player-input" id="team4-name-wrap" style="border-color: var(--purple-team); display:none;">
-                    <input type="text" id="team4-name" placeholder="Nazwa Team 4" autocomplete="off" style="text-align:center;" />
+
+                <div class="mode-card" id="mode-pojeby-card" onclick="setGameMode('pojeby')">
+                    <div class="mode-card-icon">🤪</div>
+                    <div class="mode-card-info">
+                        <div class="mode-card-title">Tryb Dla Pojebów</div>
+                        <div class="mode-card-subtitle">Totalny Chaos & Odpał</div>
+                    </div>
+                    <div class="mode-badge chaos-pulse">CHAOS</div>
+                    <div class="mode-tooltip">
+                        <strong>Totalna samowolka!</strong><br>
+                        Każda postać może pójść na dowolną linię – Yuumi w lesie, Braum na midzie, Soraka na topie! Trzeba się dogadać!
+                    </div>
                 </div>
             </div>
 
-            <div class="inputs-grid" id="inputs-container"></div>
+            <!-- PASEK AKCJI: WYMIESZAJ, KOSZYK, ZAPISZ, WCZYTAJ -->
+            <div class="teams-action-bar">
+                <button class="action-btn basket-btn" onclick="openBasketModal()" title="Otwórz koszyk graczy, aby wrzucić wszystkich i wymieszać składy">
+                    <span class="btn-icon">🧺</span> Koszyk graczy (Wymieszaj)
+                </button>
+                <button class="action-btn shuffle-btn" onclick="shuffleCurrentPlayers()" title="Wymieszaj graczy losowo między wszystkimi składami z zachowaniem balansu tarcz">
+                    <span class="btn-icon">🔀</span> Szybkie przetasowanie
+                </button>
+                <button class="action-btn save-btn" onclick="openSaveModal()" title="Zapisz wybrany skład do pamięci pod własną nazwą">
+                    <span class="btn-icon">💾</span> Zapisz skład
+                </button>
+                <button class="action-btn load-btn" onclick="openPresetsModal()" title="Przeglądaj zapisane składy i wstawiaj je jako Skład 1, 2, 3 lub 4">
+                    <span class="btn-icon">📂</span> Zapisane składy
+                </button>
+            </div>
 
-            <button id="btn-step1" class="gold-btn">Wylosuj składy</button>
+            <!-- DYNAMICZNY WIDOK KAFELKÓW SKŁADÓW -->
+            <div class="teams-builder-grid" id="teams-builder-grid">
+                <!-- Generowane dynamicznie w JS: Składy oraz kafelek '+ Dodaj skład' -->
+            </div>
+
+            <button id="btn-step1" class="gold-btn main-cta-btn">Zatwierdź składy i losuj role ➔</button>
         </div>
     </div>
 
     <!-- ================= KROK 2: ODKRYWANIE RÓL ================= -->
     <div class="step" id="step2">
-        <h1>Losowanie Ról</h1>
-        <p class="subtitle">Kliknij w karty ze znakiem zapytania, aby odkryć przypisane linie.</p>
+        <h1 id="step2-title">Losowanie Ról</h1>
+        <p class="subtitle" id="step2-subtitle">Kliknij w karty ze znakiem zapytania, aby odkryć przypisane linie.</p>
         <div class="teams-wrapper" id="roles-teams-wrapper"></div>
-        <button id="btn-step2" class="gold-btn" style="margin-top: 40px;">Dalej: Losuj Championów ➔</button>
+        <div style="display:flex; gap:15px; margin-top: 35px; flex-wrap:wrap; justify-content:center;">
+            <button class="action-btn" onclick="slideToStep(0)" style="padding: 12px 24px;">⬅ Cofnij do składów</button>
+            <button id="btn-step2" class="gold-btn">Dalej: Losuj Championów ➔</button>
+        </div>
     </div>
 
     <!-- ================= KROK 3: ODKRYWANIE POSTACI ================= -->
     <div class="step" id="step3">
-        <h1>Losowanie Postaci</h1>
-        <p class="subtitle">Bohaterowie przydzieleni! Klikaj po kolei karty, aby budować napięcie!</p>
+        <h1 id="step3-title">Losowanie Postaci</h1>
+        <p class="subtitle" id="step3-subtitle">Bohaterowie przydzieleni! Odkrywaj karty, aby budować napięcie!</p>
         <div class="teams-wrapper" id="champs-teams-wrapper"></div>
 
+        <!-- SEKCJA BITWY: 2 DRUŻYNY -->
         <div id="battle-2team-section" style="text-align:center; margin-top: 30px;">
             <button id="btn-battle" class="gold-btn" onclick="startBattle()">Kto wygra?</button>
-            <div id="battle-container" style="display: none; width: 100%; max-width: 800px; margin-top: 30px;">
+            <div id="battle-container" style="display: none; width: 100%; max-width: 800px; margin: 25px auto 0;">
                 <div class="battle-bar"><div id="battle-fill" class="battle-fill"></div></div>
                 <h2 id="winner-text" style="margin-top: 20px; color: var(--gold); opacity: 0; transition: opacity 0.5s;"></h2>
             </div>
         </div>
 
+        <!-- SEKCJA BITWY: 3 DRUŻYNY -->
+        <div id="battle-3team-section" style="display:none; text-align:center; margin-top: 30px;">
+            <button id="btn-battle-3" class="gold-btn" onclick="startBattle3()">Kto wygra z 3 drużyn?</button>
+            <div id="battle-3-container" style="display: none; margin: 25px auto 0; max-width: 500px;">
+                <div class="roulette-box" id="roulette-box">???</div>
+                <h2 id="winner-3-text" style="margin-top: 20px; color: var(--gold); opacity: 0; transition: opacity 0.5s;"></h2>
+            </div>
+        </div>
+
+        <!-- SEKCJA BITWY: 4 DRUŻYNY (PRZEJŚCIE DO DRABINKI) -->
         <div id="battle-4team-section" style="display:none; text-align:center; margin-top: 30px;">
             <button class="gold-btn" onclick="slideToStep(3)">Przejdź do Drabinki Turniejowej ➔</button>
         </div>
 
-        <button class="gold-btn" style="margin-top: 20px;" onclick="playAutumnTransition(() => location.reload())">Zagraj ponownie</button>
+        <div style="display:flex; gap:15px; margin-top: 25px; flex-wrap:wrap; justify-content:center;">
+            <button class="action-btn" onclick="slideToStep(1)" style="padding: 12px 24px;">⬅ Powrót do ról</button>
+            <button class="gold-btn" onclick="playAutumnTransition(() => location.reload())">Zagraj ponownie</button>
+        </div>
     </div>
 
-    <!-- ================= KROK 4: DRABINKA TURNIEJOWA (tylko tryb 4 drużyn) ================= -->
+    <!-- ================= KROK 4: DRABINKA TURNIEJOWA (4 drużyny) ================= -->
     <div class="step" id="step4">
         <h1>Drabinka Turniejowa</h1>
-        <p class="subtitle">Półfinały → Finał. Kliknij nazwę drużyny, aby ją awansować.</p>
+        <p class="subtitle">Półfinały → Finał. Kliknij nazwę drużyny, aby awansować ją do finału!</p>
 
         <div class="bracket-wrapper">
             <!-- Półfinały -->
@@ -94,12 +139,12 @@
                 <div class="bracket-match" id="sf1-match">
                     <div class="bracket-team-slot bracket-clickable" id="sf1-team1" onclick="pickWinner('sf1', 0)">
                         <span class="bracket-team-dot" style="background:var(--blue-team)"></span>
-                        <span id="sf1-t1-name">Team 1</span>
+                        <span id="sf1-t1-name">Skład 1</span>
                     </div>
                     <div class="bracket-vs">VS</div>
                     <div class="bracket-team-slot bracket-clickable" id="sf1-team2" onclick="pickWinner('sf1', 1)">
                         <span class="bracket-team-dot" style="background:var(--red-team)"></span>
-                        <span id="sf1-t2-name">Team 2</span>
+                        <span id="sf1-t2-name">Skład 2</span>
                     </div>
                 </div>
 
@@ -107,12 +152,12 @@
                 <div class="bracket-match" id="sf2-match" style="margin-top:20px;">
                     <div class="bracket-team-slot bracket-clickable" id="sf2-team1" onclick="pickWinner('sf2', 0)">
                         <span class="bracket-team-dot" style="background:var(--green-team)"></span>
-                        <span id="sf2-t1-name">Team 3</span>
+                        <span id="sf2-t1-name">Skład 3</span>
                     </div>
                     <div class="bracket-vs">VS</div>
                     <div class="bracket-team-slot bracket-clickable" id="sf2-team2" onclick="pickWinner('sf2', 1)">
                         <span class="bracket-team-dot" style="background:var(--purple-team)"></span>
-                        <span id="sf2-t2-name">Team 4</span>
+                        <span id="sf2-t2-name">Skład 4</span>
                     </div>
                 </div>
             </div>
@@ -150,10 +195,177 @@
             </div>
         </div>
 
-        <button class="gold-btn" style="margin-top: 40px;" onclick="playAutumnTransition(() => location.reload())">Zagraj ponownie</button>
+        <div style="display:flex; gap:15px; margin-top: 35px; flex-wrap:wrap; justify-content:center;">
+            <button class="action-btn" onclick="slideToStep(2)" style="padding: 12px 24px;">⬅ Powrót do postaci</button>
+            <button class="gold-btn" onclick="playAutumnTransition(() => location.reload())">Zagraj ponownie</button>
+        </div>
     </div>
 
 </div>
+
+<!-- ================= MODALE I POWIADOMIENIA ================= -->
+
+<!-- Modal Zapisywania Składów -->
+<div class="modal-overlay" id="save-modal" style="display: none;" onclick="handleModalBackdropClick(event, 'save-modal')">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h3>💾 Zapisz skład do pamięci</h3>
+            <button class="modal-close-btn" onclick="closeModal('save-modal')">✕</button>
+        </div>
+        <div class="modal-body">
+            <label class="modal-label">Wybierz skład do zapisania:</label>
+            <div class="save-team-select-group" id="save-team-select-group">
+                <!-- Generowane w JS: przyciski wyboru składu -->
+            </div>
+
+            <label class="modal-label" for="save-preset-name">Nazwa tego składu:</label>
+            <input type="text" id="save-preset-name" class="modal-input" placeholder="np. Chłopaki z Discorda, Team Alpha..." autocomplete="off">
+            <div class="modal-hint" id="save-preset-hint">Zapisuje 5 graczy z wybranego składu wraz z ich tarczami ochronnymi 🛡️.</div>
+        </div>
+        <div class="modal-footer">
+            <button class="modal-btn secondary" onclick="closeModal('save-modal')">Anuluj</button>
+            <button class="modal-btn primary" onclick="confirmSavePreset()">💾 Zapisz skład</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Zapisanych Składów -->
+<div class="modal-overlay" id="presets-modal" style="display: none;" onclick="handleModalBackdropClick(event, 'presets-modal')">
+    <div class="modal-card presets-modal-card">
+        <div class="modal-header">
+            <h3>📂 Twoje Zapisane Składy</h3>
+            <button class="modal-close-btn" onclick="closeModal('presets-modal')">✕</button>
+        </div>
+        <div class="modal-body">
+            <p class="modal-desc">Wybierz zapisany skład i kliknij, na który numer składu chcesz go wstawić:</p>
+            <div class="presets-list" id="presets-list">
+                <!-- Generowane dynamicznie w JS -->
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="modal-btn secondary" onclick="closeModal('presets-modal')">Zamknij</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Koszyka Graczy -->
+<div class="modal-overlay" id="basket-modal" style="display: none;" onclick="handleModalBackdropClick(event, 'basket-modal')">
+    <div class="modal-card basket-modal-card">
+        <div class="modal-header">
+            <h3>🧺 Koszyk Graczy</h3>
+            <button class="modal-close-btn" onclick="closeModal('basket-modal')">✕</button>
+        </div>
+        <div class="modal-body basket-modal-body">
+            <!-- Pasek wpisywania: nick + tarcza + Dodaj -->
+            <div class="basket-input-row">
+                <input type="text"
+                    id="basket-player-input"
+                    class="modal-input basket-input"
+                    placeholder="Wpisz nick gracza i naciśnij Enter..."
+                    autocomplete="off"
+                    onkeydown="handleBasketInputKey(event)">
+                <button type="button"
+                    id="basket-shield-toggle-btn"
+                    class="basket-shield-toggle-btn"
+                    title="Tarcza wygaszona — kliknij, aby zapalić i dodać gracza z tarczą 🛡️"
+                    onclick="toggleBasketInputShield()">🛡️</button>
+                <button type="button" class="gold-btn basket-add-btn" onclick="addSinglePlayerToBasket()">Dodaj ➕</button>
+            </div>
+
+            <!-- Dynamiczny status: Zielony na 5, 10, 15, Czerwony gdy niepełny skład -->
+            <div id="basket-status-banner" class="basket-status-banner empty">
+                Wpisz nick gracza i naciśnij Enter.
+            </div>
+
+            <!-- Nagłówek listy z licznikiem i czyszczeniem -->
+            <div class="basket-list-header">
+                <span class="basket-list-title">Gracze w koszyku (<span id="basket-count-number">0</span>):</span>
+                <button type="button" class="basket-clear-link" onclick="clearBasket()">Wyczyść listę 🗑️</button>
+            </div>
+
+            <!-- Lista dodanych graczy rosnąca w dół -->
+            <div class="basket-players-list" id="basket-players-list">
+                <!-- Generowane w JS -->
+            </div>
+        </div>
+
+        <div class="modal-footer basket-modal-footer">
+            <button class="modal-btn secondary" onclick="closeModal('basket-modal')">Anuluj</button>
+            <button class="modal-btn primary" id="basket-submit-btn" onclick="generateTeamsFromBasket()">🔀 Wymieszaj i stwórz składy</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Pełnej Listy Postaci (173 Bohaterów) -->
+<div class="modal-overlay" id="champions-catalog-modal" style="display: none;" onclick="handleModalBackdropClick(event, 'champions-catalog-modal')">
+    <div class="modal-card champions-catalog-card">
+        <div class="modal-header">
+            <div class="catalog-header-title-box">
+                <div class="catalog-title-row">
+                    <span class="catalog-magic-icon">✨</span>
+                    <h3>Pełna Lista Postaci (173 Bohaterów)</h3>
+                    <span class="catalog-patch-badge">Patch 16.19+ • Październik 2026</span>
+                </div>
+                <div class="catalog-header-subtitle">Spis wszystkich 173 czempionów w grze — w tym Locke, Mel, Ambessa, Aurora, Smolder, Hwei, Briar, Bel'Veth!</div>
+            </div>
+            <button class="modal-close-btn" onclick="closeModal('champions-catalog-modal')">✕</button>
+        </div>
+        
+        <div class="modal-body champions-catalog-body">
+            <!-- Pasek wyszukiwania i filtry ról -->
+            <div class="catalog-controls-bar">
+                <div class="catalog-search-wrapper">
+                    <input type="text"
+                        id="catalog-search-input"
+                        class="modal-input catalog-search-input"
+                        placeholder="🔍 Wpisz nazwę bohatera (np. Locke, Briar, Bel'Veth, Aurora, Yasuo, Smolder...)"
+                        autocomplete="off"
+                        oninput="onCatalogSearchInput(this.value)">
+                    <button type="button" class="catalog-search-clear-btn" id="catalog-search-clear" onclick="clearCatalogSearch()" style="display:none;">✕</button>
+                </div>
+                
+                <div class="catalog-role-filters" id="catalog-role-filters">
+                    <button type="button" class="catalog-filter-btn active" data-role="all" onclick="setCatalogRoleFilter('all')">Wszystkie (173)</button>
+                    <button type="button" class="catalog-filter-btn" data-role="new" onclick="setCatalogRoleFilter('new')">✨ Nowe 2022-2026</button>
+                    <button type="button" class="catalog-filter-btn" data-role="Top" onclick="setCatalogRoleFilter('Top')">Top</button>
+                    <button type="button" class="catalog-filter-btn" data-role="Jungle" onclick="setCatalogRoleFilter('Jungle')">Jungle</button>
+                    <button type="button" class="catalog-filter-btn" data-role="Mid" onclick="setCatalogRoleFilter('Mid')">Mid</button>
+                    <button type="button" class="catalog-filter-btn" data-role="ADC" onclick="setCatalogRoleFilter('ADC')">ADC</button>
+                    <button type="button" class="catalog-filter-btn" data-role="Support" onclick="setCatalogRoleFilter('Support')">Support</button>
+                    <button type="button" class="catalog-filter-btn" data-role="trolls" onclick="setCatalogRoleFilter('trolls')">🤪 Trolle (Chaos)</button>
+                </div>
+            </div>
+
+            <!-- Licznik wyników -->
+            <div class="catalog-stats-row">
+                <span>Pokazano: <strong id="catalog-count-display">173</strong> z 173 bohaterów</span>
+                <span class="catalog-hint-text">Najedź na postać, aby zobaczyć przypisane linie</span>
+            </div>
+
+            <!-- Siatka kafelków postaci -->
+            <div class="champions-grid-container" id="champions-grid-container">
+                <!-- Generowane dynamicznie w JS -->
+            </div>
+        </div>
+
+        <div class="modal-footer champions-catalog-footer">
+            <div class="catalog-footer-hint">
+                🛡️ <strong>Tryb Normalny:</strong> bohaterowie losują się zgodnie z oficjalnymi rolami • 🤪 <strong>Tryb Dla Pojebów:</strong> odpał i trolle!
+            </div>
+            <button class="modal-btn secondary" onclick="closeModal('champions-catalog-modal')">Zamknij</button>
+        </div>
+    </div>
+</div>
+
+<!-- PŁYWAJĄCY MAGICZNY PRZYCISK: LISTA POSTACI (173) -->
+<button id="floating-champs-btn" class="floating-champs-btn" onclick="openChampionsCatalogModal()" title="Otwórz pełną listę wszystkich 173 bohaterów LoL (aktualizacja październik 2026)">
+    <span class="magic-sparkle-icon">✨</span>
+    <span class="magic-btn-text">Lista postaci</span>
+    <span class="champs-count-pill">173</span>
+</button>
+
+<!-- Kontener na powiadomienia Toast -->
+<div class="toast-container" id="toast-container"></div>
 
 <div class="footer">By Kajuszkaa | SwyBee47 | Claude</div>
 
