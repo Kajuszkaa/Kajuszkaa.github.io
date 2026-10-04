@@ -96,12 +96,62 @@
         <p class="subtitle" id="step3-subtitle">Bohaterowie przydzieleni! Odkrywaj karty, aby budować napięcie!</p>
         <div class="teams-wrapper" id="champs-teams-wrapper"></div>
 
-        <!-- SEKCJA BITWY: 2 DRUŻYNY -->
-        <div id="battle-2team-section" style="text-align:center; margin-top: 30px;">
-            <button id="btn-battle" class="gold-btn" onclick="startBattle()">Kto wygra?</button>
-            <div id="battle-container" style="display: none; width: 100%; max-width: 800px; margin: 25px auto 0;">
-                <div class="battle-bar"><div id="battle-fill" class="battle-fill"></div></div>
-                <h2 id="winner-text" style="margin-top: 20px; color: var(--gold); opacity: 0; transition: opacity 0.5s;"></h2>
+        <!-- SEKCJA BITWY: 2 DRUŻYNY (BOKSOWANIE I PRZEPYCHANIE SIĘ) -->
+        <div id="battle-2team-section" class="battle-arena-section" style="text-align:center; margin-top: 35px;">
+            <button id="btn-battle" class="gold-btn battle-start-btn" onclick="startBattle()">
+                <span class="btn-icon">🥊</span> Kto wygra? Przepychanka drużyn!
+            </button>
+
+            <div id="battle-container" class="battle-clash-container" style="display: none;">
+                <!-- Etykiety drużyn i procenty siły -->
+                <div class="battle-teams-header">
+                    <div class="battle-team-badge team-left" id="battle-team0-badge">
+                        <span class="team-dot dot-blue"></span>
+                        <span class="battle-team-name" id="battle-team0-name">Skład 1</span>
+                        <span class="battle-team-pct" id="battle-team0-pct">50%</span>
+                    </div>
+                    <div class="battle-vs-badge" id="battle-clash-status">
+                        <span class="vs-text" id="battle-vs-text">🥊 VS 🥊</span>
+                    </div>
+                    <div class="battle-team-badge team-right" id="battle-team1-badge">
+                        <span class="battle-team-pct" id="battle-team1-pct">50%</span>
+                        <span class="battle-team-name" id="battle-team1-name">Skład 2</span>
+                        <span class="team-dot dot-red"></span>
+                    </div>
+                </div>
+
+                <!-- Główny pasek walki / przepychania -->
+                <div class="battle-bar-outer" id="battle-bar-outer">
+                    <div class="battle-bar-track" id="battle-bar-track">
+                        <!-- Wypełnienie lewej drużyny (Skład 1) -->
+                        <div id="battle-fill" class="battle-fill-left" style="width: 50%;"></div>
+                        
+                        <!-- Znacznik punktu starcia / frontu walki -->
+                        <div id="battle-clash-marker" class="battle-clash-marker" style="left: 50%;">
+                            <div class="clash-icon-box" id="clash-icon-box">
+                                <span class="clash-icon" id="clash-icon">⚔️</span>
+                            </div>
+                            <div class="clash-spark-line"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pasek dynamicznego komentarza (na bieżąco opisuje zwroty akcji) -->
+                <div class="battle-commentary-box" id="battle-commentary">
+                    🥊 Drużyny stają naprzeciw siebie w ringu...
+                </div>
+
+                <!-- Rezultat zwycięstwa -->
+                <div class="battle-result-card" id="battle-result-card" style="display: none;">
+                    <div class="result-trophy">🏆</div>
+                    <h2 id="winner-text" class="winner-title"></h2>
+                    <p id="winner-subtitle" class="winner-subtitle"></p>
+                    <div style="margin-top: 15px;">
+                        <button type="button" class="action-btn retry-battle-btn" onclick="startBattle()">
+                            🔄 Przepchnij jeszcze raz!
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
 
