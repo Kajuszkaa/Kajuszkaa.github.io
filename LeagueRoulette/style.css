@@ -793,6 +793,44 @@ body.theme-pojeby .champ-portrait {
     border-color: #00ff66;
 }
 
+/* Tekst i rzadki dopisek (Easter egg) wewnątrz odkrytej karty */
+.champ-text-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 1px;
+    overflow: hidden;
+    text-align: left;
+}
+
+.champ-name-label {
+    font-weight: 700;
+    font-size: 13px;
+    line-height: 1.15;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 125px;
+}
+
+.champ-easter-egg {
+    font-size: 9px;
+    font-weight: 800;
+    color: #ffb703;
+    font-style: italic;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 125px;
+    letter-spacing: 0.2px;
+}
+
+body.theme-pojeby .champ-easter-egg {
+    color: #ff3399;
+    text-shadow: 0 0 6px rgba(255, 51, 153, 0.4);
+}
+
 .reroll-btn {
     background: linear-gradient(180deg, var(--gold) 0%, var(--gold-dark) 100%);
     border: 1px solid #f0e6d2;

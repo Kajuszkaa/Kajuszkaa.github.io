@@ -155,6 +155,24 @@ const ICONIC_TROLL_PICKS = {
 
 
 
+// Rzadkie, humorystyczne dopiski (Easter eggi) wyświetlane pod postacią PO ODKRYCIU KARTY (np. Yuumi na topie)
+const RARE_TROLL_EASTER_EGGS = {
+    "Yuumi-Top":     "🐱 Bogowie, pomóżcie...",
+    "Yuumi-Jungle":  "🐱 Bogowie, pomóżcie...",
+    "Soraka-Top":    "🍌 Bananowy terror",
+    "Braum-Mid":     "🛡️ Pancerne serce mida",
+    "Ivern-ADC":     "🌳 Drzewcowe dekery",
+    "Singed-ADC":    "🧪 Wąchaj botlane xd",
+    "Taric-Mid":     "💎 Klejnoty na midzie",
+    "Rammus-Mid":    "🐢 Ok."
+};
+
+function getRareTrollEasterEgg(champId, role) {
+    if (gameMode !== 'pojeby') return null;
+    const key = `${champId}-${role}`;
+    return RARE_TROLL_EASTER_EGGS[key] || null;
+}
+
 // --- STAN APLIKACJI ---
 let gameMode = 'normal'; // 'normal' | 'pojeby'
 let activeTeams = [
@@ -1151,6 +1169,9 @@ function renderChampsCards(teamArray, containerId, teamNum) {
         const cardBackId = `t${teamNum}-p${index}-back`;
         const btnId      = `t${teamNum}-p${index}-reroll`;
 
+        const easterEgg = getRareTrollEasterEgg(player.champion.id, player.role);
+        const easterEggHtml = easterEgg ? `<span class="champ-easter-egg">${easterEgg}</span>` : '';
+
         container.innerHTML += `
             <div class="player-row">
                 <div>
@@ -1163,7 +1184,10 @@ function renderChampsCards(teamArray, containerId, teamNum) {
                             <div class="front">?</div>
                             <div class="back champ-back" id="${cardBackId}">
                                 <img src="${champImgUrl}" class="champ-portrait" alt="" loading="lazy">
-                                <span>${player.champion.name}</span>
+                                <div class="champ-text-meta">
+                                    <span class="champ-name-label">${player.champion.name}</span>
+                                    ${easterEggHtml}
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1203,9 +1227,14 @@ function rerollChampion(teamNum, playerIndex, btnEl, cardBackId, flipperId) {
 
     setTimeout(() => {
         const champImgUrl = `https://ddragon.leagueoflegends.com/cdn/${latestPatch}/img/champion/${newChamp.image.full}`;
+        const easterEgg = getRareTrollEasterEgg(newChamp.id, player.role);
+        const easterEggHtml = easterEgg ? `<span class="champ-easter-egg">${easterEgg}</span>` : '';
         document.getElementById(cardBackId).innerHTML = `
             <img src="${champImgUrl}" class="champ-portrait" alt="" loading="lazy">
-            <span>${newChamp.name}</span>
+            <div class="champ-text-meta">
+                <span class="champ-name-label">${newChamp.name}</span>
+                ${easterEggHtml}
+            </div>
         `;
     }, 400);
 }
