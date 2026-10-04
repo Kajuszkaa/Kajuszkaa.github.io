@@ -1210,7 +1210,7 @@ function rerollChampion(teamNum, playerIndex, btnEl, cardBackId, flipperId) {
     }, 400);
 }
 
-// ===================== BITWA: 2 DRUŻYNY (BOKSOWANIE I PRZEPYCHANIE SIĘ) =====================
+// ===================== BITWA: 2 DRUŻYNY (PRZECIĄGANIE LINY) =====================
 
 let battleAnimationTimer = null;
 
@@ -1218,19 +1218,13 @@ function startBattle() {
     const btn = document.getElementById('btn-battle');
     const battleContainer = document.getElementById('battle-container');
     const battleFill = document.getElementById('battle-fill');
-    const clashMarker = document.getElementById('battle-clash-marker');
-    const clashIcon = document.getElementById('clash-icon');
-    const barOuter = document.getElementById('battle-bar-outer');
-    const commentary = document.getElementById('battle-commentary');
-    const resultCard = document.getElementById('battle-result-card');
+    const winnerWrap = document.getElementById('battle-winner-wrap');
     const winnerText = document.getElementById('winner-text');
-    const winnerSubtitle = document.getElementById('winner-subtitle');
-    const vsText = document.getElementById('battle-vs-text');
+    const clashIcon = document.getElementById('clash-icon');
 
     const t0Name = teamNames[0] || "Skład 1";
     const t1Name = teamNames[1] || "Skład 2";
 
-    // Nazwy i procenty w nagłówku
     const nameEl0 = document.getElementById('battle-team0-name');
     const nameEl1 = document.getElementById('battle-team1-name');
     const pctEl0  = document.getElementById('battle-team0-pct');
@@ -1241,71 +1235,32 @@ function startBattle() {
     if (pctEl0)  pctEl0.innerText  = '50%';
     if (pctEl1)  pctEl1.innerText  = '50%';
 
-    // Reset stanu UI
     if (btn) btn.style.display = 'none';
     if (battleContainer) battleContainer.style.display = 'block';
-    if (resultCard) resultCard.style.display = 'none';
+    if (winnerWrap) winnerWrap.style.display = 'none';
     if (winnerText) winnerText.innerText = '';
-    if (winnerSubtitle) winnerSubtitle.innerText = '';
-    if (barOuter) barOuter.classList.remove('clash-heavy-hit');
-    if (vsText) vsText.innerText = '🥊 VS 🥊';
+    if (clashIcon) clashIcon.innerText = '⚔️';
 
     if (battleAnimationTimer) {
         clearInterval(battleAnimationTimer);
         battleAnimationTimer = null;
     }
 
-    // Dźwięk bitwy
     audioBattle.currentTime = 0;
     audioBattle.play().catch(() => {});
 
-    // Zwycięzca: 0 (Skład 1 -> 100%) lub 1 (Skład 2 -> 0%)
+    // Zwycięzca: 0 (lewa strona / 100%) lub 1 (prawa strona / 0%)
     const winnerNum = Math.random() < 0.5 ? 0 : 1;
     const winnerName = winnerNum === 0 ? t0Name : t1Name;
-    const loserName  = winnerNum === 0 ? t1Name : t0Name;
 
     let currentPos = 50.0;
     let targetPos  = 50.0;
     let elapsedMs  = 0;
-    const frameIntervalMs = 35; // ~28 FPS płynnego ruchu i wibracji
-
-    // Scenariusz walki w 4 rundach
-    const rounds = [
-        {
-            timeStart: 0,
-            timeEnd: 1800,
-            icon: "🥊",
-            comment: () => `🥊 Rozpoczęcie walki! ${t0Name} i ${t1Name} rzucają się na siebie w centrum ringu!`
-        },
-        {
-            timeStart: 1800,
-            timeEnd: 3800,
-            icon: "💥",
-            shake: true,
-            comment: () => `💥 Potężna seria ciosów! ${loserName} spycha rywali desperackim atakiem pod liny!`
-        },
-        {
-            timeStart: 3800,
-            timeEnd: 5600,
-            icon: "⚡",
-            shake: true,
-            comment: () => `🛡️ NIEPRAWDOPODOBNA KONTRA! ${winnerName} zbiera siły i rusza z zabójczym kontratakiem!`
-        },
-        {
-            timeStart: 5600,
-            timeEnd: 7400,
-            icon: "🥊",
-            comment: () => `🔥 FINAŁOWY SZTURM! ${winnerName} łamie defensywę i bezlitośnie dociska rywali do ściany!`
-        }
-    ];
-
-    let currentRoundIdx = -1;
+    const frameIntervalMs = 35;
 
     function updateDisplay(pos) {
         const clamped = Math.max(0, Math.min(100, pos));
         if (battleFill) battleFill.style.width = clamped + '%';
-        if (clashMarker) clashMarker.style.left = clamped + '%';
-
         const p0 = Math.round(clamped);
         const p1 = 100 - p0;
         if (pctEl0) pctEl0.innerText = p0 + '%';
@@ -1317,46 +1272,31 @@ function startBattle() {
     battleAnimationTimer = setInterval(() => {
         elapsedMs += frameIntervalMs;
 
-        // Przełączanie fazy i komentarza na żywo
-        const roundIdx = rounds.findIndex(r => elapsedMs >= r.timeStart && elapsedMs < r.timeEnd);
-        if (roundIdx !== -1 && roundIdx !== currentRoundIdx) {
-            currentRoundIdx = roundIdx;
-            const r = rounds[roundIdx];
-            if (commentary) commentary.innerText = r.comment();
-            if (clashIcon) clashIcon.innerText = r.icon;
-            if (r.shake && barOuter) {
-                barOuter.classList.remove('clash-heavy-hit');
-                void barOuter.offsetWidth;
-                barOuter.classList.add('clash-heavy-hit');
-            }
-        }
-
-        // Boksowanie i przeciąganie liny - dynamiczna fizyka walki
-        if (elapsedMs < 1800) {
-            // Runda 1: szybkie ciosy i wymiana w centrum (45% - 55%)
-            const jab = Math.sin(elapsedMs / 130) * 4.5 + (Math.random() - 0.5) * 3;
+        if (elapsedMs < 1400) {
+            // Faza 1: zacięte wahania w centrum
+            const jab = Math.sin(elapsedMs / 120) * 5 + (Math.random() - 0.5) * 3;
             targetPos = 50 + jab;
-        } else if (elapsedMs < 3800) {
-            // Runda 2: pierwszy potężny push przegranego (spycha na 24% lub 76%)
+        } else if (elapsedMs < 3000) {
+            // Faza 2: nagły zryw jednej drużyny
             const pushDir = winnerNum === 0 ? -1 : 1;
-            const progress = (elapsedMs - 1800) / 2000;
-            const vibration = Math.sin(elapsedMs / 90) * 3.5;
-            targetPos = 50 + (pushDir * 26 * Math.sin(progress * Math.PI / 2)) + vibration;
-        } else if (elapsedMs < 5600) {
-            // Runda 3: potężna kontra zwycięzcy - boksowanie przez całą długość paska
-            const progress = (elapsedMs - 3800) / 1800;
-            const startPush = winnerNum === 0 ? 24 : 76;
-            const endPush   = winnerNum === 0 ? 74 : 26;
-            const struggle = Math.sin(elapsedMs / 80) * 4;
+            const progress = (elapsedMs - 1400) / 1600;
+            const vibration = Math.sin(elapsedMs / 80) * 3;
+            targetPos = 50 + (pushDir * 24 * Math.sin(progress * Math.PI / 2)) + vibration;
+        } else if (elapsedMs < 4600) {
+            // Faza 3: dramatyczna kontra w drugą stronę
+            const progress = (elapsedMs - 3000) / 1600;
+            const startPush = winnerNum === 0 ? 26 : 74;
+            const endPush   = winnerNum === 0 ? 76 : 24;
+            const struggle = Math.sin(elapsedMs / 70) * 3.5;
             targetPos = startPush + (endPush - startPush) * (progress * progress) + struggle;
-        } else if (elapsedMs < 7400) {
-            // Runda 4: ostateczny nokautujący szturm do 100% lub 0%
-            const progress = (elapsedMs - 5600) / 1800;
-            const startFinish = winnerNum === 0 ? 74 : 26;
+        } else if (elapsedMs < 6000) {
+            // Faza 4: decydujący szturm do krawędzi
+            const progress = (elapsedMs - 4600) / 1400;
+            const startFinish = winnerNum === 0 ? 76 : 24;
             const endFinish   = winnerNum === 0 ? 100 : 0;
             targetPos = startFinish + (endFinish - startFinish) * Math.pow(progress, 1.4);
         } else {
-            // Zakończenie: Zwycięski nokaut!
+            // Wygrana!
             clearInterval(battleAnimationTimer);
             battleAnimationTimer = null;
             targetPos = winnerNum === 0 ? 100 : 0;
@@ -1368,18 +1308,10 @@ function startBattle() {
             audioWin.play().catch(() => {});
 
             if (clashIcon) clashIcon.innerText = "👑";
-            if (vsText) vsText.innerText = `🏆 ${winnerName} WYGRYWA! 🏆`;
-            if (commentary) commentary.innerText = `💥 CZYSTY NOKAUT! ${winnerName} posyła rywali na deski i wygrywa walkę!`;
-
-            if (barOuter) {
-                barOuter.classList.remove('clash-heavy-hit');
-                void barOuter.offsetWidth;
-                barOuter.classList.add('clash-heavy-hit');
-            }
 
             if (typeof confetti === 'function') {
                 confetti({
-                    particleCount: 220,
+                    particleCount: 200,
                     spread: 120,
                     origin: { y: 0.6 },
                     colors: ['#c8aa6e', winnerNum === 0 ? '#0ac8b9' : '#e84057', '#ffffff'],
@@ -1388,17 +1320,15 @@ function startBattle() {
             }
 
             setTimeout(() => {
-                if (resultCard) {
-                    resultCard.style.display = 'block';
-                    if (winnerText) winnerText.innerText = `Maszyna przewiduje zwycięstwo: ${winnerName}! 🏆`;
-                    if (winnerSubtitle) winnerSubtitle.innerText = `Spektakularny nokaut po bezwzględnej przepychance w ringu!`;
+                if (winnerWrap) {
+                    winnerWrap.style.display = 'block';
+                    if (winnerText) winnerText.innerText = `🏆 Zwycięża: ${winnerName}!`;
                 }
-            }, 600);
+            }, 400);
 
             return;
         }
 
-        // Płynne podążanie za celem z tłumieniem (smooth dampening)
         currentPos += (targetPos - currentPos) * 0.35;
         updateDisplay(currentPos);
     }, frameIntervalMs);
